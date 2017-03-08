@@ -8,11 +8,14 @@
 % assume that the initial time starts at 0
 time(0).
 
-% max. X-Coordinate
+% max. X-Coordinate of field
 maxX(X) :- X=#max{S:init(object(node,_),value(at,(S,Y)))}.
 
-% max. Y-Coordinate 
+% max. Y-Coordinate of field
 maxY(Y) :- Y=#max{S:init(object(node,_),value(at,(X,S)))}.
+
+% current position at start (recognised with "at, (X,Y)")
+curlocation(R, X, Y, 0) :- init(object(robot,R),value(at,(X,Y))).
 
 %%%%%%% Base Code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -22,13 +25,10 @@ maxY(Y) :- Y=#max{S:init(object(node,_),value(at,(X,S)))}.
 % when delivered, order is done 
 orderdone(B) :- occurs(object(robot, _), action(deliver, (B, _, _)), _).
 
-% current position at start (recognised with "at, (X,Y)")
-curlocation(R, X, Y, 0) :- init(object(robot,R),value(at,(X,Y))).
-
 % current position at time T+1 depends on movement of robot and position at time T
 curlocation(R, X+A, Y+B, T+1) :- occurs(object(robot, Z), action(move, (A,B)), T), curlocation(R, X, Y, T).
 
-% if there is no movement at time T curlaction is the same with time T+1
+% if there is no movement at time T curlocation is the same with time T+1
 curlocation(R,X,Y,T+1) :- curlocation(R, X, Y, T), {occurs(object(robot, R), action(pickup, ()), T) ;
 occurs(object(robot, R), action(putdown, ()), T) ;
 occurs(object(robot, R), action(deliver, (1, 1, T)), T)
@@ -50,10 +50,7 @@ occurs(object(robot, Z), action(deliver, (1, 1, T)), T)
 }=1.
 
 % get the number of actions of the plan for minimization
-maxoccurs(T) :- T=#max{S:occurs(object(robot, Z), action(_,_), S)}.
-maxoccursdeliver(T) :- T=#max{S:occurs(object(robot, Z), action(deliver, (1, 1, C)), S)}.
-maxactions(T) :- maxoccurs(T), maxoccursdeliver(Z), T>=Z. 
-maxactions(T) :- maxoccurs(T), maxoccursdeliver(Z), T<=Z.
+maxoccurs(T) :- T=#max{S:occurs(object(robot, _), _, S)}.
 
 %%%%%%% Support Functions for Constraints %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -117,7 +114,7 @@ onlydeliver(R) :- shelfatpick(P,S), occurs(object(robot, R), action(deliver, (1,
 %%%%%%% Minimize %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % minimize count of steps needed for all plans
-#minimize {T: maxactions(T)}.
+#minimize {T: maxoccurs(T)}.
 
 %%%%%%% Output %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
