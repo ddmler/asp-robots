@@ -1,6 +1,6 @@
 <?php
 
-$clingo_path = "/home/<user>/clingo/build/release/clingo"; // Full path
+$clingo_path = "/home/enrico/Schreibtisch/clingo/build/release/clingo"; // Full path
 
 echo "\n";
 echo "\n";
