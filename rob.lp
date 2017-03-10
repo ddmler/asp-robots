@@ -85,6 +85,10 @@ onlydeliver(R) :- shelfatpick(P,S), occurs(object(robot, R), action(deliver, (1,
 % #3 there is no unfinished order
 :- init(object(order,B),value(line,(_,_))), not orderdone(B).
 
+% #4-edited between two putdown in a plan there has to be a pickup and the other way around
+% :- occurs(object(robot, R), action(putdown, ()), X), occurs(object(robot, R), action(putdown, ()), Z), not occurs(object(robot, R), action(pickup, ()), Y), Y<Z, X<Y.
+% :- occurs(object(robot, R), action(pickup, ()), X), occurs(object(robot, R), action(pickup, ()), Z), not occurs(object(robot, R), action(putdown, ()), Y), Y<Z, X<Y.
+
 % #4 robots can only pickup one time
 :- occurs(object(robot, R), action(pickup, ()), T), occurs(object(robot, R), action(pickup, ()), Z), T!=Z.
 
