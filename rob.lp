@@ -22,7 +22,7 @@ curlocation(R, X, Y, 0) :- init(object(robot,R),value(at,(X,Y))).
 % distribute orders on robots randomly for now
 {orderrobot(B,R):init(object(order,B),value(line,(_,_)))}=1 :- init(object(robot,R),value(at,(_,_))).
 
-% when delivered, order is done 
+% when delivered, order is done
 orderdone(B) :- occurs(object(robot, _), action(deliver, (B, _, _)), _).
 
 % current position at time T+1 depends on movement of robot and position at time T
@@ -38,7 +38,7 @@ occurs(object(robot, R), action(deliver, (1, 1, T)), T)
 { occurs(object(robot, R), action(move, (0,-1)), T) ;
 occurs(object(robot, R), action(move, (0,1)), T) ;
 occurs(object(robot, R), action(move, (-1,0)), T) ;
-occurs(object(robot, R), action(move, (1,0)), T) ;	
+occurs(object(robot, R), action(move, (1,0)), T) ;
 occurs(object(robot, R), action(pickup, ()), T) ;
 occurs(object(robot, R), action(putdown, ()), T) ;
 occurs(object(robot, R), action(deliver, (1, 1, T)), T)
@@ -60,11 +60,11 @@ isatpick(R,P,T):- curlocation(R, X, Y, T), init(object(pickingStation,P),value(a
 % robot is at a shelf / fulfilles Constraint #11
 isatshelf(R,S,T) :- curlocation(R, X, Y, T), init(object(shelf,S),value(at,(X,Y))).
 
-% robot has put down and delivered / fulfilles Constraint #7
-putdeliver(R,Z) :- occurs(object(robot, R), action(putdown, ()), T), occurs(object(robot, R), action(deliver, (1,1,C)), Z).
+% robot has picked up and delivered / fulfilles Constraint #7
+pickdeliver(R,Z) :- occurs(object(robot, R), action(pickup, ()), T), occurs(object(robot, R), action(deliver, (1,1,C)), Z).
 
 % robot has picked up and put down / fulfilles Constraint #8
-pickput(R,Z) :- occurs(object(robot, R), action(pickup, ()), T), occurs(object(robot, R), action(putdown, ()), Z). 
+pickput(R,Z) :- occurs(object(robot, R), action(pickup, ()), T), occurs(object(robot, R), action(putdown, ()), Z).
 
 % tests if a picking station and a needed shelf are on the same node so there is no pickup and putdown needed for the shelf / fulfilles Constraint #7
 shelfatpick(P,S) :- init(object(pickingStation,P),value(at,(X,Y))), init(object(shelf,S),value(at,(X,Y))).
@@ -74,15 +74,15 @@ onlydeliver(R) :- shelfatpick(P,S), occurs(object(robot, R), action(deliver, (1,
 
 % #1 no movements over border
 :- curlocation(R, X, 1, T), occurs(object(robot, R), action(move, (0,-1)), T).
-:- curlocation(R, X, Y, T), occurs(object(robot, R), action(move, (0,1)), T), maxY(Y). 
-:- curlocation(R, X, Y, T), occurs(object(robot, R), action(move, (1,0)), T), maxX(X). 
+:- curlocation(R, X, Y, T), occurs(object(robot, R), action(move, (0,1)), T), maxY(Y).
+:- curlocation(R, X, Y, T), occurs(object(robot, R), action(move, (1,0)), T), maxX(X).
 :- curlocation(R, 1, Y, T), occurs(object(robot, R), action(move, (-1,0)), T).
 
 % #2 a robot has only one order and an order has only one robot
 :- orderrobot(O,R), orderrobot(A,B), O==A, R!=B.
 :- orderrobot(O,R), orderrobot(A,B), O!=A, R==B.
 
-% #3 there is no unfinished order 
+% #3 there is no unfinished order
 :- init(object(order,B),value(line,(_,_))), not orderdone(B).
 
 % #4 robots can only pickup one time
@@ -94,13 +94,13 @@ onlydeliver(R) :- shelfatpick(P,S), occurs(object(robot, R), action(deliver, (1,
 % #6 robots can only deliver one time
 :- occurs(object(robot, R), action(deliver, (1,1,C)), Z),occurs(object(robot, R), action(deliver, (1,1,D)), T),T!=Z.
 
-% #7 if there is deliver, there is a putdown before, except the needed shelf is at the same node as the picking station
-:- occurs(object(robot, R), action(deliver, (1,1,C)), Z), occurs(object(robot, R), action(putdown, ()), T), Z<T.
-:- occurs(object(robot, R), action(deliver, (1,1,C)), Z), not putdeliver(R,Z), not onlydeliver(R).
+% #7 if there is deliver, there is a pickup before, except the needed shelf is at the same node as the picking station
+:- occurs(object(robot, R), action(deliver, (1,1,C)), Z), occurs(object(robot, R), action(pickup, ()), T), Z<T.
+:- occurs(object(robot, R), action(deliver, (1,1,C)), Z), not pickdeliver(R,Z), not onlydeliver(R).
 
 % #8 if there is a putdown, there has to be a pickup before
 :- occurs(object(robot, R), action(putdown, ()), Z), not pickput(R,Z).
-:- occurs(object(robot, R), action(putdown, ()), Z), occurs(object(robot, R), action(pickup, ()), T), Z<T. 
+:- occurs(object(robot, R), action(putdown, ()), Z), occurs(object(robot, R), action(pickup, ()), T), Z<T.
 
 % #9 robots can only deliver at picking stations
 :- orderrobot(B,R), init(object(order,B),value(pickingStation,P)), init(object(pickingStation,P),value(at,(X,Y))), occurs(object(robot, R), action(deliver, (1, 1, _)), T), not isatpick(R,P,T) .
@@ -110,6 +110,9 @@ onlydeliver(R) :- shelfatpick(P,S), occurs(object(robot, R), action(deliver, (1,
 
 % #11 pickup only when robot at correct location & shelf needed for order
 :- orderrobot(B,R), init(object(order,B),value(line,(G,H))), init(object(shelf,S),value(at,(X,Y))), init(object(product,G),value(on,(X,Y))), occurs(object(robot, R), action(pickup, ()), T), not isatshelf(R,S,T).
+
+% #12 there is no putdown, between a pickup and a deliver
+:- occurs(object(robot, R), action(deliver, (1,1,C)), Z), occurs(object(robot, R), action(pickup, ()), S), occurs(object(robot, R), action(putdown, ()), T), T<Z, S<T.
 
 %%%%%%% Minimize %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
