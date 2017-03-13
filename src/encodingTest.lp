@@ -43,11 +43,11 @@
 
 #const istop  = "SAT".
 #const imin   = 0.
-#const imax   = 50. 
+#const imax   = 50.
 
 #program base.
 
-%%	ACTIONS
+%%  ACTIONS
 action(move(0,1)).
 action(move(1,0)).
 action(move(0,-1)).
@@ -61,8 +61,8 @@ holds(F,0) :- init(F).
 
 
 %%cast external instance format to internal instance format
-node(X,Y) :- init(object(node, ID), value(at, (X, Y))). 
-highway(X,Y) :- init(object(highway, ID), value(at, (X, Y))). 
+node(X,Y) :- init(object(node, ID), value(at, (X, Y))).
+highway(X,Y) :- init(object(highway, ID), value(at, (X, Y))).
 init(at(robot(ID), node(X, Y))) :- init(object(robot, ID), value(at, (X, Y))).
 init(at(shelf(ID), node(X, Y))) :- init(object(shelf, ID), value(at, (X, Y))).
 init(at(pickingstation(ID), node(X, Y))) :- init(object(pickingStation, ID), value(at, (X, Y))).
@@ -86,104 +86,104 @@ occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t) :- occurs(ro
 
 
 %%%%% Reduce Complexity Test
-{ occurs(robot(RID),action(move(X,Y)),t):action(move(X,Y))}1 :- robot(RID), holds(at(robot(RID),node(DX,DY)),t-1), not holds(at(shelf(_),node(DX,DY)),t-1), not init(at(pickingstation(_), node(DX, DY))).
-{ occurs(robot(RID),action(deliver(RQID, PRID, AMT)),t):action(deliver(RQID, PRID, AMT));occurs(robot(RID),action(move(X,Y)),t):action(move(X,Y))}1 :- robot(RID),holds(at(robot(RID),node(DX,DY)),t-1), holds(at(shelf(SID),node(DX,DY)),t-1), holds(carries(RID,SID),t-1), init(at(pickingstation(ID), node(DX, DY))).
-{ occurs(robot(RID),action(move(X,Y)),t):action(move(X,Y))}1 :- robot(RID), holds(at(robot(RID),node(DX,DY)),t-1), not holds(at(shelf(_),node(DX,DY)),t-1), init(at(pickingstation(_), node(DX, DY))).
-{ occurs(robot(RID),action(pickup),t);occurs(robot(RID),action(move(X,Y)),t):action(move(X,Y))}1 :- robot(RID), holds(at(robot(RID),node(DX,DY)),t-1), holds(at(shelf(SID),node(DX,DY)),t-1), not holds(carries(RID,SID),t-1), not init(at(pickingstation(_), node(DX, DY))). 
-{ occurs(robot(RID),action(putdown),t);occurs(robot(RID),action(move(X,Y)),t):action(move(X,Y))}1 :- robot(RID), holds(at(robot(RID),node(DX,DY)),t-1), holds(at(shelf(SID),node(DX,DY)),t-1), holds(carries(RID,SID),t-1), not init(at(pickingstation(_), node(DX, DY))). 
+{ occurs(robot(RID),move(X,Y),t):action(move(X,Y))}1 :- robot(RID), holds(at(robot(RID),node(DX,DY)),t-1), not holds(at(shelf(_),node(DX,DY)),t-1), not init(at(pickingstation(_), node(DX, DY))).
+{ occurs(robot(RID),deliver(RQID, PRID, AMT),t):action(deliver(RQID, PRID, AMT));occurs(robot(RID),action(move(X,Y)),t):action(move(X,Y))}1 :- robot(RID),holds(at(robot(RID),node(DX,DY)),t-1), holds(at(shelf(SID),node(DX,DY)),t-1), holds(carries(RID,SID),t-1), init(at(pickingstation(ID), node(DX, DY))).
+{ occurs(robot(RID),move(X,Y),t):action(move(X,Y))}1 :- robot(RID), holds(at(robot(RID),node(DX,DY)),t-1), not holds(at(shelf(_),node(DX,DY)),t-1), init(at(pickingstation(_), node(DX, DY))).
+{ occurs(robot(RID),pickup,t);occurs(robot(RID),action(move(X,Y)),t):action(move(X,Y))}1 :- robot(RID), holds(at(robot(RID),node(DX,DY)),t-1), holds(at(shelf(SID),node(DX,DY)),t-1), not holds(carries(RID,SID),t-1), not init(at(pickingstation(_), node(DX, DY))).
+{ occurs(robot(RID),putdown,t);occurs(robot(RID),action(move(X,Y)),t):action(move(X,Y))}1 :- robot(RID), holds(at(robot(RID),node(DX,DY)),t-1), holds(at(shelf(SID),node(DX,DY)),t-1), holds(carries(RID,SID),t-1), not init(at(pickingstation(_), node(DX, DY))).
 :- occurs(robot(RID),A,t), occurs(robot(RID),B,t), A!=B.
 
-%%	ACTION - CHOICE
-%{ occurs(robot(RID),A,t):action(A) } 1 :- robot(RID). 
+%%  ACTION - CHOICE
+%{ occurs(robot(RID),A,t):action(A) } 1 :- robot(RID).
 :- occurs(robot(RID),A,t), not poss(robot(RID),A,t).
-%%	ACTION - PRECONDITIONS
+%%  ACTION - PRECONDITIONS
 %       The preconditions for move(DX,DY), pickup and putdown as described at the top under %%%ACTIONS%%%.
-poss(robot(RID),move(DX,DY),t)	    :- 	action(move(DX,DY)),
+poss(robot(RID),move(DX,DY),t)      :-  action(move(DX,DY)),
                                         holds(at(robot(RID),node(X,Y)),t-1),
-							            node(X+DX,Y+DY).
-poss(robot(RID),pickup,t)       	:-	holds(at(robot(RID),node(X,Y)),t-1),
-            							holds(at(shelf(SID),node(X,Y)),t-1),
-            							not holds(carries(RID,_),t-1).
-poss(robot(RID),putdown,t)	        :-	holds(carries(RID,_),t-1).
+                                        node(X+DX,Y+DY).
+poss(robot(RID),pickup,t)           :-  holds(at(robot(RID),node(X,Y)),t-1),
+                                        holds(at(shelf(SID),node(X,Y)),t-1),
+                                        not holds(carries(RID,_),t-1).
+poss(robot(RID),putdown,t)          :-  holds(carries(RID,_),t-1).
 
-poss(robot(RID), deliver(RQID, PRID, RQAMT),t) :- 
+poss(robot(RID), deliver(RQID, PRID, RQAMT),t) :-
                                         RQAMT=1..AMT,
                                         holds(request(RQID,PRID,PSID,_),t-1),
                                         holds(carries(RID,_),t-1),
-										holds(on(PRID,SID,AMT),t-1),
-										holds(at(shelf(SID),node(X,Y)),t-1),
-										holds(at(pickingstation(PSID),node(X,Y)),t-1),
+                                        holds(on(PRID,SID,AMT),t-1),
+                                        holds(at(shelf(SID),node(X,Y)),t-1),
+                                        holds(at(pickingstation(PSID),node(X,Y)),t-1),
                                         holds(at(robot(RID), node(X,Y)), t-1).
 
-%%	ACTION - EFFECTS
+%%  ACTION - EFFECTS
 %       The conditional and unconditional effect of move, the effect of pickup.
 %       The effect of putdown is realized in the abnormal section as it requires the removal of a fluent.
 %       moved is an auxilary predicate for later use, indicating that the robot moved.
-holds(at(robot(RID),node(X+DX,Y+DY)),t)	:-	node(X+DX,Y+DY),
-										holds(at(robot(RID),node(X,Y)),t-1),
-										occurs(robot(RID),move(DX,DY),t).
-holds(at(shelf(SID),node(X+DX,Y+DY)),t)	:-	node(X+DX,Y+DY),
-										holds(at(robot(RID),node(X,Y)),t-1),
-										occurs(robot(RID),move(DX,DY),t),
-										holds(carries(RID,SID),t-1).
-holds(carries(RID,SID),t)			:-	holds(at(robot(RID),node(X,Y)),t),
-										holds(at(shelf(SID),node(X,Y)),t),
-										occurs(robot(RID),pickup,t).
+holds(at(robot(RID),node(X+DX,Y+DY)),t) :-  node(X+DX,Y+DY),
+                                        holds(at(robot(RID),node(X,Y)),t-1),
+                                        occurs(robot(RID),move(DX,DY),t).
+holds(at(shelf(SID),node(X+DX,Y+DY)),t) :-  node(X+DX,Y+DY),
+                                        holds(at(robot(RID),node(X,Y)),t-1),
+                                        occurs(robot(RID),move(DX,DY),t),
+                                        holds(carries(RID,SID),t-1).
+holds(carries(RID,SID),t)           :-  holds(at(robot(RID),node(X,Y)),t),
+                                        holds(at(shelf(SID),node(X,Y)),t),
+                                        occurs(robot(RID),pickup,t).
 moved(robot(RID),t)                 :-  occurs(robot(RID),move(_,_),t), robot(RID).
 
 
 %% REQUEST-/PRODUCT HANDLING
 %       Requests are expected to be done after one timestep in the pickingstation.
-%       Depending if there is enough of the product on the shelf the amount is lowered 
+%       Depending if there is enough of the product on the shelf the amount is lowered
 %                          or the shelf is emptied and the requested amount is lowered.
-holds(on(PRID,SID,AMT-RQAMT),t)		:-	AMT>RQAMT,
-										holds(on(PRID,SID,AMT),t-1),
+holds(on(PRID,SID,AMT-RQAMT),t)     :-  AMT>RQAMT,
+                                        holds(on(PRID,SID,AMT),t-1),
                                         holds(carries(RID,SID),t-1),
                                         occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
 
-holds(request(RQID,PRID,PSID,RQAMT-AMT),t):-	AMT<RQAMT,
+holds(request(RQID,PRID,PSID,RQAMT-AMT),t):-    AMT<RQAMT,
                                         holds(request(RQID,PRID,PSID,RQAMT),t-1),
                                         occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
 
-holds(done(RQID,PRID,PSID,RQAMT),t)	:-	holds(request(RQID,PRID,PSID,RQAMT),t-1),
+holds(done(RQID,PRID,PSID,RQAMT),t) :-  holds(request(RQID,PRID,PSID,RQAMT),t-1),
                                         occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
 
 %--------------------------------------------------%
-										
-%%	INERTIA
+
+%%  INERTIA
 holds(F,t) :- holds(F,t-1), not ab(F,t).
 
-%%	INERTIA - ABNORMALS
+%%  INERTIA - ABNORMALS
 %       Anything that changes is abnormal and won't be handled by inertia.
-ab(at(robot(RID),node(X,Y)),t) 	:-	holds(at(robot(RID),node(X,Y)),t-1),
-								moved(robot(RID),t).								
-ab(at(shelf(SID),node(X,Y)),t) 	:-	holds(at(shelf(SID),node(X,Y)),t-1),
-								holds(carries(RID,SID),t-1),
-								moved(robot(RID),t).
-ab(carries(RID,SID),t)		:-	holds(carries(RID,SID),t-1),
-								occurs(robot(RID),putdown,t).
-ab(on(PRID,SID,AMT),t)		:-	holds(on(PRID,SID,AMT),t-1),
+ab(at(robot(RID),node(X,Y)),t)  :-  holds(at(robot(RID),node(X,Y)),t-1),
+                                moved(robot(RID),t).
+ab(at(shelf(SID),node(X,Y)),t)  :-  holds(at(shelf(SID),node(X,Y)),t-1),
+                                holds(carries(RID,SID),t-1),
+                                moved(robot(RID),t).
+ab(carries(RID,SID),t)      :-  holds(carries(RID,SID),t-1),
+                                occurs(robot(RID),putdown,t).
+ab(on(PRID,SID,AMT),t)      :-  holds(on(PRID,SID,AMT),t-1),
                                 holds(carries(RID,SID),t-1),
                                 occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
-ab(request(RQID,PRID,PID,RQAMT),t) :-	holds(request(RQID,PRID,PID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
-ab(request(RQID,PRID,PID,RQAMT),t) :-	holds(done(RQID,PRID,PID,RQAMT),t).
-ab(done(RQID,PRID,PID,RQAMT),t)    :-	holds(done(RQID,PRID,PID,RQAMT),t-1).
+ab(request(RQID,PRID,PID,RQAMT),t) :-   holds(request(RQID,PRID,PID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
+ab(request(RQID,PRID,PID,RQAMT),t) :-   holds(done(RQID,PRID,PID,RQAMT),t).
+ab(done(RQID,PRID,PID,RQAMT),t)    :-   holds(done(RQID,PRID,PID,RQAMT),t-1).
 
 %--------------------------------------------------%
 
-%%	STATIC LAWS
+%%  STATIC LAWS
 %       There can only be one robot and one shelf at a node at the same time.
-:-	node(X,Y), 2{holds(at(robot(RID),node(X,Y)),t): robot(RID)}.
-:-	node(X,Y), 2{holds(at(shelf(SID),node(X,Y)),t): shelf(SID)}.
+:-  node(X,Y), 2{holds(at(robot(RID),node(X,Y)),t): robot(RID)}.
+:-  node(X,Y), 2{holds(at(shelf(SID),node(X,Y)),t): shelf(SID)}.
 
 %       A robot/shelf can only be at one node at a time.
-:-	robot(RID), 2{holds(at(robot(RID),node(X,Y)),t) : node(X,Y)}.
-:-	shelf(SID), 2{holds(at(shelf(SID),node(X,Y)),t) : node(X,Y)}.
+:-  robot(RID), 2{holds(at(robot(RID),node(X,Y)),t) : node(X,Y)}.
+:-  shelf(SID), 2{holds(at(shelf(SID),node(X,Y)),t) : node(X,Y)}.
 
 %       Two robots can't swap places as they would crash.
-:-	holds(at(robot(RID1),node(X1,Y1)),t), holds(at(robot(RID2),node(X2,Y2)),t),
-	holds(at(robot(RID1),node(X2,Y2)),t-1), holds(at(robot(RID2),node(X1,Y1)),t-1),
-	RID1<RID2, |X2-X1|+|Y2-Y1|==1.
+:-  holds(at(robot(RID1),node(X1,Y1)),t), holds(at(robot(RID2),node(X2,Y2)),t),
+    holds(at(robot(RID1),node(X2,Y2)),t-1), holds(at(robot(RID2),node(X1,Y1)),t-1),
+    RID1<RID2, |X2-X1|+|Y2-Y1|==1.
 
 %       On higway nodes shelfs can't be putdown and robots can't do nothing for more than one time step.
 :-  highway(X,Y), not node(X,Y).
@@ -194,11 +194,11 @@ ab(done(RQID,PRID,PID,RQAMT),t)    :-	holds(done(RQID,PRID,PID,RQAMT),t-1).
 :- occurs(robot(RID),move(DX,DY),t), occurs(robot(RID),move(-DX,-DY),t-1).
 :- occurs(robot(RID),pickup,t), occurs(robot(RID),putdown,t-1).
 :- occurs(robot(RID),putdown,t), occurs(robot(RID),pickup,t-1).
-	
+
 %--------------------------------------------------%
 #program check(t).
 #external query(t).
-%%	GOAL - CONDITION
+%%  GOAL - CONDITION
 %       The goal is reached when there are no more requests.
 goal(t) :- not holds(request(_,_,_,_),t).
 :- not goal(t), query(t).
