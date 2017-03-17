@@ -12,4 +12,8 @@ First edit test.php and change your path for clingo. To execute:
 
 ```sh
 php test.php
-```
+`
+### Improve Performance
+```sh``
+--configuration=crafty --stats=2
+`
