@@ -69,6 +69,7 @@ init(at(pickingstation(ID), node(X, Y))) :- init(object(pickingStation, ID), val
 init(on(ID, ShelfID, Amount)) :- init(object(product, ID), value(on, (ShelfID, Amount))).
 init(request(ID, Item, StationID, Amount)) :- init(object(order, ID), value(line, (Item, Amount))), init(object(order,ID),value(pickingStation, StationID)).
 init(carries(RID,SID)) :- init(object(robot, RID), value(carries, SID)).
+
 robot(Robot) :- init(at(robot(Robot), node(_,_))).
 shelf(Shelf) :- init(at(shelf(Shelf), node(_,_))).
 pickingstation(Pickingstation) :- init(at(pickingstation(Pickingstation), node(_,_))).
@@ -82,45 +83,9 @@ occurs(object(robot, RID), action(move, (DX,DY)), t) :- occurs(robot(RID),move(D
 occurs(object(robot, RID), action(pickup, ()), t) :- occurs(robot(RID),pickup,t).
 occurs(object(robot, RID), action(putdown, ()), t) :- occurs(robot(RID),putdown,t).
 occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t) :- occurs(robot(RID),deliver(RQID, PRID, RQAMT),t).
-                                            
-
 
 %%	ACTION - CHOICE
-
-
-ca(move(X,Y)) :- action(move(X,Y)).
-cb(move(X,Y)) :- action(move(X,Y)).
-cb(pickup).
-cc(move(X,Y)) :- action(move(X,Y)).
-cc(putdown).
-cd(move(X,Y)) :- action(move(X,Y)).
-cd(deliver(RQID, PRID, AMT)) :- init(request(RQID, PRID, StationID, RQAMT)), AMT = 1..RQAMT.
-
-casea(t,RID) :- holds(at(robot(RID),node(X,Y)),t), 
-                not holds(at(shelf(_),node(X,Y)),t).  
-caseb(t,RID) :- holds(at(robot(RID),node(X,Y)),t), 
-                holds(at(shelf(SID),node(X,Y)),t), 
-                not holds(carries(RID,SID),t),
-                not init(at(pickingstation(_), node(X,Y))).
-casec(t,RID) :- holds(at(robot(RID),node(X,Y)),t), 
-                holds(at(shelf(SID),node(X,Y)),t), 
-                holds(carries(RID,SID),t), 
-                not init(at(pickingstation(_), node(X,Y))).
-cased(t,RID) :- robot(RID), 
-                holds(carries(RID,SID),t), 
-                holds(at(robot(RID),node(X,Y)),t), 
-                holds(at(shelf(SID),node(X,Y)),t), 
-                init(at(pickingstation(ID),node(X, Y))), 
-                init(request(RQID, Item, ID, Amount)), 
-                init(on(Item, SID, Amt)).
-
-{occurs(robot(RID),A,t):ca(A)}1 :- casea(t-1,RID).
-{occurs(robot(RID),A,t):cb(A)}1 :- caseb(t-1,RID).
-{occurs(robot(RID),A,t):cc(A)}1 :- casec(t-1,RID).
-{occurs(robot(RID),A,t):cd(A)}1 :- cased(t-1,RID).
-
-_heuristic(occurs(RID,deliver(RQID, PRID, AMT),t), sign, 1) :- init(request(RQID, PRID, StationID, RQAMT)), AMT = 1..RQAMT, cased(t-1,RID).
-
+{ occurs(robot(RID),A,t):action(A) } 1 :- robot(RID). 
 :- occurs(robot(RID),A,t), not poss(robot(RID),A,t).
 %%	ACTION - PRECONDITIONS
 %       The preconditions for move(DX,DY), pickup and putdown as described at the top under %%%ACTIONS%%%.
@@ -140,10 +105,6 @@ poss(robot(RID), deliver(RQID, PRID, RQAMT),t) :-
 										holds(at(shelf(SID),node(X,Y)),t-1),
 										holds(at(pickingstation(PSID),node(X,Y)),t-1),
                                         holds(at(robot(RID), node(X,Y)), t-1).
-
-
-
-
 
 %%	ACTION - EFFECTS
 %       The conditional and unconditional effect of move, the effect of pickup.
@@ -233,8 +194,8 @@ ab(done(RQID,PRID,PID,RQAMT),t)    :-	holds(done(RQID,PRID,PID,RQAMT),t-1).
 goal(t) :- not holds(request(_,_,_,_),t).
 :- not goal(t), query(t).
 %       The optimization is set to find the plan with the least amount of actions.
-#minimize{ 1, RID, T : occurs(robot(RID),_,T)}.
+%#minimize{ 1, RID, T : occurs(robot(RID),_,T)}.
 
 %--------------------------------------------------%
-#program base.
+
 #show occurs/3.
