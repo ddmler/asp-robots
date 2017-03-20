@@ -11,7 +11,7 @@
 % Command line option: use --configuration=crafty for better performance
 % Command line option: use 1 (e.g. clingo 1 encoding.lp) for faster solving
 % Comment minimize for faster solving
-% Solving via command line needs the python.lp script (e.g. clingo encoding.lp python.lp)
+% Solving via command line needs the incmode-python.lp script (e.g. clingo encoding.lp python.lp)
 %%%%%%% constants %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #const incremental = true.
