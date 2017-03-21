@@ -10,6 +10,7 @@
 %%%%%%% advices %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Command line option: use --configuration=crafty for better performance
 % Command line option: use 1 (e.g. clingo 1 encoding.lp) for faster solving
+% Command line option: use --heuristic=Vsids or --heuristic=Domain for better performance
 % Comment minimize for faster solving
 % Solving via command line needs the incmode-python.lp script (e.g. clingo encoding.lp python.lp)
 %%%%%%% constants %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -19,23 +20,14 @@
 #const imin   = 0.
 #const imax   = 30. 
 
-%%%%%%% base program %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% base program (borrowed from original and edited) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #program base.
-
-% define the all possible actions
-action(move(0,1)).
-action(move(1,0)).
-action(move(0,-1)).
-action(move(-1,0)). 
-action(pickup).
-action(putdown).
-action(deliver(RQID, PRID, AMT)) :- init(request(RQID, PRID, StationID, RQAMT)), AMT = 1..RQAMT.
 
 %% initial state
 holds(F,0) :- init(F).
 
-%%cast external instance format to internal instance format
+%%cast external instance format to internal instance format 
 node(X,Y) :- init(object(node, ID), value(at, (X, Y))). 
 highway(X,Y) :- init(object(highway, ID), value(at, (X, Y))). 
 init(at(robot(ID), node(X, Y))) :- init(object(robot, ID), value(at, (X, Y))).
@@ -46,14 +38,12 @@ init(request(ID, Item, StationID, Amount)) :- init(object(order, ID), value(line
 init(carries(RID,SID)) :- init(object(robot, RID), value(carries, SID)).
 robot(Robot) :- init(at(robot(Robot), node(_,_))).
 shelf(Shelf) :- init(at(shelf(Shelf), node(_,_))).
-pickingstation(Pickingstation) :- init(at(pickingstation(Pickingstation), node(_,_))).
-product(Product) :- init(on(Product, _, _)).
 
 %%%%%%% steps %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #program step(t).
 
-%%cast internal plan format to output plan format
+%%cast internal plan format to output plan format (borrowed from original)
 occurs(object(robot, RID), action(move, (DX,DY)), t) :- occurs(robot(RID),move(DX,DY),t).
 occurs(object(robot, RID), action(pickup, ()), t) :- occurs(robot(RID),pickup,t).
 occurs(object(robot, RID), action(putdown, ()), t) :- occurs(robot(RID),putdown,t).
@@ -113,7 +103,7 @@ _heuristic(occurs(robot(RID),pickup,t), sign, 1) :- caseb(t-1,RID).
 _heuristic(occurs(robot(RID),putdown,t), sign, 1) :- casec(t-1,RID).
 _heuristic(occurs(robot(RID),deliver(RQID, PRID, AMT),t), sign, 1) :- init(request(RQID, PRID, StationID, RQAMT)), AMT = 1..RQAMT, cased(t-1,RID,_,_,_).
 
-% action effects
+% action effects (borrowed from original and edited)
 
 holds(at(robot(RID),node(X+DX,Y+DY)),t)	:-	node(X+DX,Y+DY), holds(at(robot(RID),node(X,Y)),t-1), occurs(robot(RID),move(DX,DY),t).
 holds(at(shelf(SID),node(X+DX,Y+DY)),t)	:-	node(X+DX,Y+DY), holds(at(robot(RID),node(X,Y)),t-1), occurs(robot(RID),move(DX,DY),t), holds(carries(RID,SID),t-1).
@@ -123,23 +113,25 @@ holds(on(PRID,SID,AMT-RQAMT),t)		:-	AMT>RQAMT, holds(on(PRID,SID,AMT),t-1), hold
 holds(request(RQID,PRID,PSID,RQAMT-AMT),t):-	AMT<RQAMT, holds(request(RQID,PRID,PSID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
 holds(done(RQID,PRID,PSID,RQAMT),t)	:-	holds(request(RQID,PRID,PSID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
 
-% non-action effects
+% non-action effects (borrowed from original and edited)
 
-holds(on(PRID,SID,AMT),t) :- holds(on(PRID,SID,AMT),t-1), not ab(on(PRID,SID,AMT),t).
-holds(request(RQID,PRID,PID,RQAMT),t) :- holds(request(RQID,PRID,PID,RQAMT),t-1), not ab(request(RQID,PRID,PID,RQAMT),t).
-holds(done(RQID,PRID,PID,RQAMT),t) :- holds(done(RQID,PRID,PID,RQAMT),t-1), not ab(done(RQID,PRID,PID,RQAMT),t). 
 holds(at(robot(RID),node(X,Y)),t) :- holds(at(robot(RID),node(X,Y)),t-1), not moved(robot(RID),t).
 holds(at(shelf(SID),node(X,Y)),t) :- holds(at(shelf(SID),node(X,Y)),t-1), not holds(carries(_,SID),t-1).
-holds(carries(RID,SID),t) :- holds(carries(RID,SID),t-1), not occurs(robot(RID),putdown,t).							
+holds(carries(RID,SID),t) :- holds(carries(RID,SID),t-1), not occurs(robot(RID),putdown,t).		
+holds(on(PRID,SID,AMT),t) :- holds(on(PRID,SID,AMT),t-1), not ab(on(PRID,SID,AMT),t).
+holds(request(RQID,PRID,PID,RQAMT),t) :- holds(request(RQID,PRID,PID,RQAMT),t-1), not ab(request(RQID,PRID,PID,RQAMT),t).			
 ab(on(PRID,SID,AMT),t)		:-	holds(on(PRID,SID,AMT),t-1), holds(carries(RID,SID),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
 ab(request(RQID,PRID,PID,RQAMT),t) :-	holds(request(RQID,PRID,PID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
 ab(request(RQID,PRID,PID,RQAMT),t) :-	holds(done(RQID,PRID,PID,RQAMT),t).
-ab(done(RQID,PRID,PID,RQAMT),t)    :-	holds(done(RQID,PRID,PID,RQAMT),t-1).
-  
-%%%%%%% constraints %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%% constraints (partly borrowed from original) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%       loop prevention
+:-  occurs(robot(RID),move(A,B),t), occurs(robot(RID),move(X,Y),t+1), occurs(robot(RID),move(-A,-B),t+2), occurs(robot(RID),move(-X,-Y),t+3).
+:-  occurs(robot(RID),move(A,B),t), occurs(robot(RID),move(X,Y),t+1), occurs(robot(RID),move(-X,-Y),t+2), occurs(robot(RID),move(-A,-B),t+3).
 
 %       there is no deliver if there is not enough amount
-:- occurs(robot(RID),deliver(A,B,C),t), not deliver(t-1,RID,A,B,C).
+:-  occurs(robot(RID),deliver(A,B,C),t), not deliver(t-1,RID,A,B,C).
 
 %       there can only be one action per robot at a time
 :-  occurs(robot(RID),A,t),occurs(robot(RID),B,t),A!=B.
@@ -175,16 +167,17 @@ ab(done(RQID,PRID,PID,RQAMT),t)    :-	holds(done(RQID,PRID,PID,RQAMT),t-1).
 #program check(t).
 #external query(t).
 
-%%%%%%% fulfillment of orders %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% fulfillment of orders (borrowed from original) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 goal(t) :- not holds(request(_,_,_,_),t).
 :- not goal(t), query(t).
 
 %%%%%%% minimization %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%#minimize{ 1, RID, T : occurs(robot(RID),_,T)}.
+%#minimize{RID,T : occurs(robot(RID),_,T)}.
 
 %%%%%%% output %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #program base.
 #show occurs/3.
+
