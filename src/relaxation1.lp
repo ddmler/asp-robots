@@ -150,8 +150,8 @@ holds(roborder(RID,RQID),t) :- holds(roborder(RID,RQID),t-1), holds(carries(RID,
 :-  occurs(robot(RID),move(A,B),t),occurs(robot(RID),move(C,D),t+1),occurs(robot(RID),move(E,F),t+2),occurs(robot(RID),move(G,H),t+3),holds(at(robot(RID),node(X,Y)),t-1),holds(at(robot(RID),node(X,Y)),t+3).
 
 %       There can only be one robot and one shelf at a node at the same time.
-:-	node(X,Y), 2{holds(at(robot(RID),node(X,Y)),t): robot(RID)}.
-:-	node(X,Y), 2{holds(at(shelf(SID),node(X,Y)),t): shelf(SID)}.
+:-	holds(at(robot(I),node(X,Y)),T), holds(at(robot(J),node(X,Y)),T), I!=J.
+:-	holds(at(shelf(I),node(X,Y)),T), holds(at(shelf(J),node(X,Y)),T), I!=J.
 
 %       A robot/shelf can only be at one node at a time.
 :-	robot(RID), 2{holds(at(robot(RID),node(X,Y)),t) : node(X,Y)}.
