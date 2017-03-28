@@ -87,7 +87,7 @@ cd(RID,deliver(RQID, PRID, RQAMT),t) :- robot(RID),init(request(RQID, PRID, Stat
 casea(t,RID) :- holds(at(robot(RID),node(X,Y)),t), not holds(at(shelf(_),node(X,Y)),t).  
 caseb(t,RID) :- holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), not holds(carries(RID,SID),t).
 casec(t,RID) :- holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), holds(carries(RID,SID),t), not init(at(pickingstation(_), node(X,Y))).
-cased(t,RID,RQID,Item,Amt) :- holds(carries(RID,SID),t), holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), init(at(pickingstation(ID),node(X, Y))), init(request(RQID, Item, ID, Amount)), init(on(Item, SID, Amt)).
+cased(t,RID,RQID,Item,Amt) :- holds(carries(RID,SID),t), holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), init(at(pickingstation(_),node(X, Y))), init(request(RQID, Item, ID, Amount)), init(on(Item, SID, Amt)).
 
 % define help attribute for constraint: no deliver if there is not enough amount
 
@@ -95,7 +95,7 @@ cased(t,RID,RQID,Item,Amt) :- holds(carries(RID,SID),t), holds(at(robot(RID),nod
 
 % relaxation 2 checker
 
-:- init(request(RQID, PRID, StationID, RQAMT)),occurs(robot(RID),deliver(RQID, PRID, RQAMT),t),holds(carries(RID,SID),t-1), not init(on(PRID, SID)).
+:- init(request(RQID, PRID, _, RQAMT)),occurs(robot(RID),deliver(RQID, PRID, RQAMT),t),holds(carries(RID,SID),t-1), not init(on(PRID, SID)).
 
 % robot action decisions
 
@@ -150,8 +150,8 @@ holds(on(PRID,SID),t) :- holds(on(PRID,SID),t-1).
 :-  occurs(robot(RID),move(A,B),t),occurs(robot(RID),move(C,D),t+1),occurs(robot(RID),move(E,F),t+2),occurs(robot(RID),move(G,H),t+3),holds(at(robot(RID),node(X,Y)),t-1),holds(at(robot(RID),node(X,Y)),t+3).
 
 %       There can only be one robot and one shelf at a node at the same time.
-:-	node(X,Y), 2{holds(at(robot(RID),node(X,Y)),t): robot(RID)}.
-:-	node(X,Y), 2{holds(at(shelf(SID),node(X,Y)),t): shelf(SID)}.
+:-	holds(at(robot(I),node(X,Y)),T), holds(at(robot(J),node(X,Y)),T), I!=J.
+:-	holds(at(shelf(I),node(X,Y)),T), holds(at(shelf(J),node(X,Y)),T), I!=J.
 
 %       A robot/shelf can only be at one node at a time.
 :-	robot(RID), 2{holds(at(robot(RID),node(X,Y)),t) : node(X,Y)}.
