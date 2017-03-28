@@ -92,7 +92,9 @@ casec(t,RID) :- holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)
 
 % relaxation 1 checker
 
-occurs(object(robot, RID), action(deliver, (RQID, PRID, DELAMT)), t+1) :- holds(roborder(RID, RQID), t), holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), init(at(pickingstation(ID),node(X, Y))), init(request(RQID, PRID, ID, RQAMT)), init(on(PRID, SID, AMT)), DELAMT=1..AMT.
+occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t+1) :- holds(roborder(RID, RQID), t), holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), init(at(pickingstation(ID),node(X, Y))), init(request(RQID, PRID, ID, RQAMT)), init(on(PRID, SID, AMT)), RQAMT>AMT.
+
+occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t+1) :- holds(roborder(RID, RQID), t), holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), init(at(pickingstation(ID),node(X, Y))), init(request(RQID, PRID, ID, RQAMT)), init(on(PRID, SID, AMT)), AMT>=RQAMT.
 
 % robot action decisions
 
