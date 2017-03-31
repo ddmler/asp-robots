@@ -3,10 +3,10 @@
 % attributes like location of a robot and shelf represent a state at time t of the automaton as a set
 % depending on the state there are varying actions possible for each robot
 % actions may be seen as transitions between states
-% thus actions may change the state of an automaton (e.g. change of the location of a robot)  
+% thus actions may change the state of an automaton (e.g. change of the location of a robot)
 % reaching the state of fulfillment of all orders is the goal of this encoding
 %%%%%%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% parts of this code were used from the original encoding of Obermeier 
+% parts of this code were used from the original encoding of Obermeier
 %%%%%%% advices %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Command line option: use --configuration=crafty for better performance
 % Command line option: use 1 (e.g. clingo 1 encoding.lp) for faster solving
@@ -18,7 +18,7 @@
 #const incremental = true.
 #const istop  = "SAT".
 #const imin   = 0.
-#const imax   = 30. 
+#const imax   = 30.
 
 %%%%%%% base program (borrowed from original and edited) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -27,9 +27,9 @@
 %% initial state
 holds(F,0) :- init(F).
 
-%%cast external instance format to internal instance format 
-node(X,Y) :- init(object(node, ID), value(at, (X, Y))). 
-highway(X,Y) :- init(object(highway, ID), value(at, (X, Y))). 
+%%cast external instance format to internal instance format
+node(X,Y) :- init(object(node, ID), value(at, (X, Y))).
+highway(X,Y) :- init(object(highway, ID), value(at, (X, Y))).
 init(at(robot(ID), node(X, Y))) :- init(object(robot, ID), value(at, (X, Y))).
 init(at(shelf(ID), node(X, Y))) :- init(object(shelf, ID), value(at, (X, Y))).
 init(at(pickingstation(ID), node(X, Y))) :- init(object(pickingStation, ID), value(at, (X, Y))).
@@ -48,40 +48,40 @@ occurs(object(robot, RID), action(move, (DX,DY)), t) :- occurs(robot(RID),move(D
 occurs(object(robot, RID), action(pickup, ()), t) :- occurs(robot(RID),pickup,t).
 occurs(object(robot, RID), action(putdown, ()), t) :- occurs(robot(RID),putdown,t).
 occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t) :- occurs(robot(RID),deliver(RQID, PRID, RQAMT),t).
- 
+
 % define all possible acions for a robot at step t for each case
 
-moveleft(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X-1,Y).
-moveright(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X+1,Y).
-moveup(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y+1).
-movedown(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y-1).
+possmoveleft(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X-1,Y).
+possmoveright(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X+1,Y).
+possmoveup(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y+1).
+possmovedown(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y-1).
 
-ca(RID,move(-1,0),t) :- moveleft(RID,t-1).
-ca(RID,move(1,0),t) :- moveright(RID,t-1).
-ca(RID,move(0,1),t) :- moveup(RID,t-1).
-ca(RID,move(0,-1),t) :- movedown(RID,t-1).
+posscasea(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
+posscasea(RID,move(1,0),t) :- possmoveright(RID,t-1).
+posscasea(RID,move(0,1),t) :- possmoveup(RID,t-1).
+posscasea(RID,move(0,-1),t) :- possmovedown(RID,t-1).
 
-cb(RID,move(-1,0),t) :- moveleft(RID,t-1).
-cb(RID,move(1,0),t) :- moveright(RID,t-1).
-cb(RID,move(0,1),t) :- moveup(RID,t-1).
-cb(RID,move(0,-1),t) :- movedown(RID,t-1).
-cb(RID,pickup,t) :- robot(RID).
+posscaseb(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
+posscaseb(RID,move(1,0),t) :- possmoveright(RID,t-1).
+posscaseb(RID,move(0,1),t) :- possmoveup(RID,t-1).
+posscaseb(RID,move(0,-1),t) :- possmovedown(RID,t-1).
+posscaseb(RID,pickup,t) :- robot(RID).
 
-cc(RID,move(-1,0),t) :- moveleft(RID,t-1).
-cc(RID,move(1,0),t) :- moveright(RID,t-1).
-cc(RID,move(0,1),t) :- moveup(RID,t-1).
-cc(RID,move(0,-1),t) :- movedown(RID,t-1).
-cc(RID,putdown,t) :- robot(RID).
+posscasec(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
+posscasec(RID,move(1,0),t) :- possmoveright(RID,t-1).
+posscasec(RID,move(0,1),t) :- possmoveup(RID,t-1).
+posscasec(RID,move(0,-1),t) :- possmovedown(RID,t-1).
+posscasec(RID,putdown,t) :- robot(RID).
 
-cd(RID,move(-1,0),t) :- moveleft(RID,t-1).
-cd(RID,move(1,0),t) :- moveright(RID,t-1).
-cd(RID,move(0,1),t) :- moveup(RID,t-1).
-cd(RID,move(0,-1),t) :- movedown(RID,t-1).
-cd(RID,deliver(RQID, PRID, AMT),t) :- robot(RID),init(request(RQID, PRID, StationID, RQAMT)), AMT = 1..RQAMT.
+posscased(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
+posscased(RID,move(1,0),t) :- possmoveright(RID,t-1).
+posscased(RID,move(0,1),t) :- possmoveup(RID,t-1).
+posscased(RID,move(0,-1),t) :- possmovedown(RID,t-1).
+posscased(RID,deliver(RQID, PRID, AMT),t) :- robot(RID),init(request(RQID, PRID, StationID, RQAMT)), AMT = 1..RQAMT.
 
 % defining cases for different actions
 
-casea(t,RID) :- holds(at(robot(RID),node(X,Y)),t), not holds(at(shelf(_),node(X,Y)),t).  
+casea(t,RID) :- holds(at(robot(RID),node(X,Y)),t), not holds(at(shelf(_),node(X,Y)),t).
 caseb(t,RID) :- holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), not holds(carries(RID,SID),t).
 casec(t,RID) :- holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), holds(carries(RID,SID),t), not init(at(pickingstation(_), node(X,Y))).
 cased(t,RID,RQID,Item,Amt) :- holds(carries(RID,SID),t), holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), init(at(pickingstation(ID),node(X, Y))), init(request(RQID, Item, ID, Amount)), init(on(Item, SID, Amt)).
@@ -92,15 +92,13 @@ deliver(t,RID,RQID,PRID,RQAMT) :- cased(t,RID,RQID,PRID,AMT), RQAMT=1..AMT.
 
 % robot action decisions
 
-{occurs(robot(RID),A,t):ca(RID,A,t)}1 :- casea(t-1,RID).
-{occurs(robot(RID),A,t):cb(RID,A,t)}1 :- caseb(t-1,RID).
-{occurs(robot(RID),A,t):cc(RID,A,t)}1 :- casec(t-1,RID).
-{occurs(robot(RID),A,t):cd(RID,A,t)}1 :- cased(t-1,RID,_,_,_).
+{occurs(robot(RID),A,t):posscasea(RID,A,t)}1 :- casea(t-1,RID).
+{occurs(robot(RID),A,t):posscaseb(RID,A,t)}1 :- caseb(t-1,RID).
+{occurs(robot(RID),A,t):posscasec(RID,A,t)}1 :- casec(t-1,RID).
+{occurs(robot(RID),A,t):posscased(RID,A,t)}1 :- cased(t-1,RID,_,_,_).
 
 % heuristics for better performance
 
-_heuristic(occurs(robot(RID),pickup,t), sign, 1) :- caseb(t-1,RID).
-_heuristic(occurs(robot(RID),putdown,t), sign, 1) :- casec(t-1,RID).
 _heuristic(occurs(robot(RID),deliver(RQID, PRID, AMT),t), sign, 1) :- init(request(RQID, PRID, StationID, RQAMT)), AMT = 1..RQAMT, cased(t-1,RID,_,_,_).
 
 % action effects (borrowed from original and edited)
@@ -117,9 +115,9 @@ holds(done(RQID,PRID,PSID,RQAMT),t)	:-	holds(request(RQID,PRID,PSID,RQAMT),t-1),
 
 holds(at(robot(RID),node(X,Y)),t) :- holds(at(robot(RID),node(X,Y)),t-1), not moved(robot(RID),t).
 holds(at(shelf(SID),node(X,Y)),t) :- holds(at(shelf(SID),node(X,Y)),t-1), not holds(carries(_,SID),t-1).
-holds(carries(RID,SID),t) :- holds(carries(RID,SID),t-1), not occurs(robot(RID),putdown,t).		
+holds(carries(RID,SID),t) :- holds(carries(RID,SID),t-1), not occurs(robot(RID),putdown,t).
 holds(on(PRID,SID,AMT),t) :- holds(on(PRID,SID,AMT),t-1), not ab(on(PRID,SID,AMT),t).
-holds(request(RQID,PRID,PID,RQAMT),t) :- holds(request(RQID,PRID,PID,RQAMT),t-1), not ab(request(RQID,PRID,PID,RQAMT),t).			
+holds(request(RQID,PRID,PID,RQAMT),t) :- holds(request(RQID,PRID,PID,RQAMT),t-1), not ab(request(RQID,PRID,PID,RQAMT),t).
 ab(on(PRID,SID,AMT),t)		:-	holds(on(PRID,SID,AMT),t-1), holds(carries(RID,SID),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
 ab(request(RQID,PRID,PID,RQAMT),t) :-	holds(request(RQID,PRID,PID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
 ab(request(RQID,PRID,PID,RQAMT),t) :-	holds(done(RQID,PRID,PID,RQAMT),t).

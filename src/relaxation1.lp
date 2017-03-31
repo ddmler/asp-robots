@@ -105,8 +105,6 @@ occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t+1) :- holds(r
 
 % heuristics for better performance
 
-%_heuristic(occurs(robot(RID),pickup,t), sign, 1) :- caseb(t-1,RID).
-%_heuristic(occurs(robot(RID),putdown,t), sign, 1) :- casec(t-1,RID).
 %_heuristic(occurs(robot(RID),deliver(RQID, PRID, AMT),t), sign, 1) :- init(request(RQID, PRID, StationID, RQAMT)), AMT = 1..RQAMT, cased(t-1,RID,_,_,_).
 
 % action effects (borrowed from original and edited)
