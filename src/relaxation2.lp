@@ -54,69 +54,65 @@ occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t) :- occurs(ro
 
 % define all possible acions for a robot at step t for each case
 
-moveleft(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X-1,Y).
-moveright(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X+1,Y).
-moveup(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y+1).
-movedown(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y-1).
+possmoveleft(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X-1,Y).
+possmoveright(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X+1,Y).
+possmoveup(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y+1).
+possmovedown(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y-1).
 
-ca(RID,move(-1,0),t) :- moveleft(RID,t-1).
-ca(RID,move(1,0),t) :- moveright(RID,t-1).
-ca(RID,move(0,1),t) :- moveup(RID,t-1).
-ca(RID,move(0,-1),t) :- movedown(RID,t-1).
+posscasea(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
+posscasea(RID,move(1,0),t) :- possmoveright(RID,t-1).
+posscasea(RID,move(0,1),t) :- possmoveup(RID,t-1).
+posscasea(RID,move(0,-1),t) :- possmovedown(RID,t-1).
 
-cb(RID,move(-1,0),t) :- moveleft(RID,t-1).
-cb(RID,move(1,0),t) :- moveright(RID,t-1).
-cb(RID,move(0,1),t) :- moveup(RID,t-1).
-cb(RID,move(0,-1),t) :- movedown(RID,t-1).
-cb(RID,pickup,t) :- robot(RID).
+posscaseb(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
+posscaseb(RID,move(1,0),t) :- possmoveright(RID,t-1).
+posscaseb(RID,move(0,1),t) :- possmoveup(RID,t-1).
+posscaseb(RID,move(0,-1),t) :- possmovedown(RID,t-1).
+posscaseb(RID,pickup,t) :- robot(RID).
 
-cc(RID,move(-1,0),t) :- moveleft(RID,t-1).
-cc(RID,move(1,0),t) :- moveright(RID,t-1).
-cc(RID,move(0,1),t) :- moveup(RID,t-1).
-cc(RID,move(0,-1),t) :- movedown(RID,t-1).
-cc(RID,putdown,t) :- robot(RID).
+posscasec(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
+posscasec(RID,move(1,0),t) :- possmoveright(RID,t-1).
+posscasec(RID,move(0,1),t) :- possmoveup(RID,t-1).
+posscasec(RID,move(0,-1),t) :- possmovedown(RID,t-1).
+posscasec(RID,putdown,t) :- robot(RID).
 
-cd(RID,move(-1,0),t) :- moveleft(RID,t-1).
-cd(RID,move(1,0),t) :- moveright(RID,t-1).
-cd(RID,move(0,1),t) :- moveup(RID,t-1).
-cd(RID,move(0,-1),t) :- movedown(RID,t-1).
-cd(RID,deliver(RQID, PRID, RQAMT),t) :- robot(RID),init(request(RQID, PRID, StationID, RQAMT)).
+posscased(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
+posscased(RID,move(1,0),t) :- possmoveright(RID,t-1).
+posscased(RID,move(0,1),t) :- possmoveup(RID,t-1).
+posscased(RID,move(0,-1),t) :- possmovedown(RID,t-1).
+posscased(RID,deliver(RQID, PRID, RQAMT),t) :- robot(RID),init(request(RQID, PRID, StationID, RQAMT)).
 
 % defining cases for different actions
 
 casea(t,RID) :- holds(at(robot(RID),node(X,Y)),t), not holds(at(shelf(_),node(X,Y)),t).
 caseb(t,RID) :- holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), not holds(carries(RID,SID),t).
 casec(t,RID) :- holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), holds(carries(RID,SID),t), not init(at(pickingstation(_), node(X,Y))).
-cased(t,RID,RQID,Item,Amt) :- holds(carries(RID,SID),t), holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), init(at(pickingstation(_),node(X, Y))), init(request(RQID, Item, ID, Amount)), init(on(Item, SID, Amt)).
+cased(t,RID,RQID,Item,RQAMT) :- holds(carries(RID,SID),t), holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), init(at(pickingstation(ID),node(X, Y))), init(request(RQID, Item, ID, RQAMT)), init(on(Item, SID, Amt)).
 
 % define help attribute for constraint: no deliver if there is not enough amount
 
-    %deliver(t,RID,RQID,PRID,RQAMT) :- cased(t,RID,RQID,PRID,AMT), RQAMT=1..AMT.
-
-% relaxation 2 checker
-
-:- init(request(RQID, PRID, _, RQAMT)),occurs(robot(RID),deliver(RQID, PRID, RQAMT),t),holds(carries(RID,SID),t-1), not init(on(PRID, SID)).
+deliver(t,RID,RQID,PRID,RQAMT) :- cased(t,RID,RQID,PRID,RQAMT).
 
 % robot action decisions
 
-{occurs(robot(RID),A,t):ca(RID,A,t)}1 :- casea(t-1,RID).
-{occurs(robot(RID),A,t):cb(RID,A,t)}1 :- caseb(t-1,RID).
-{occurs(robot(RID),A,t):cc(RID,A,t)}1 :- casec(t-1,RID).
-{occurs(robot(RID),A,t):cd(RID,A,t)}1 :- cased(t-1,RID,_,_,_).
+{occurs(robot(RID),A,t):posscasea(RID,A,t)}1 :- casea(t-1,RID).
+{occurs(robot(RID),A,t):posscaseb(RID,A,t)}1 :- caseb(t-1,RID).
+{occurs(robot(RID),A,t):posscasec(RID,A,t)}1 :- casec(t-1,RID).
+{occurs(robot(RID),A,t):posscased(RID,A,t)}1 :- cased(t-1,RID,_,_,_).
 
 % heuristics for better performance
 
-_heuristic(occurs(robot(RID),deliver(RQID, PRID, AMT),t), sign, 1) :- init(request(RQID, PRID, StationID, RQAMT)), AMT = 1..RQAMT, cased(t-1,RID,_,_,_).
+_heuristic(occurs(robot(RID),deliver(RQID, PRID, RQAMT),t), sign, 1) :- init(request(RQID, PRID, StationID, RQAMT)), cased(t-1,RID,_,_,_).
 
 % action effects (borrowed from original and edited)
 
-holds(at(robot(RID),node(X+DX,Y+DY)),t)	:-	node(X+DX,Y+DY), holds(at(robot(RID),node(X,Y)),t-1), occurs(robot(RID),move(DX,DY),t).
-holds(at(shelf(SID),node(X+DX,Y+DY)),t)	:-	node(X+DX,Y+DY), holds(at(robot(RID),node(X,Y)),t-1), occurs(robot(RID),move(DX,DY),t), holds(carries(RID,SID),t-1).
-holds(carries(RID,SID),t)			:-	holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), occurs(robot(RID),pickup,t).
+holds(at(robot(RID),node(X+DX,Y+DY)),t) :-  node(X+DX,Y+DY), holds(at(robot(RID),node(X,Y)),t-1), occurs(robot(RID),move(DX,DY),t).
+holds(at(shelf(SID),node(X+DX,Y+DY)),t) :-  node(X+DX,Y+DY), holds(at(robot(RID),node(X,Y)),t-1), occurs(robot(RID),move(DX,DY),t), holds(carries(RID,SID),t-1).
+holds(carries(RID,SID),t)           :-  holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), occurs(robot(RID),pickup,t).
 moved(robot(RID),t)                 :-  occurs(robot(RID),move(_,_),t), robot(RID).
-holds(on(PRID,SID,AMT-RQAMT),t)		:-	AMT>RQAMT, holds(on(PRID,SID,AMT),t-1), holds(carries(RID,SID),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
-holds(request(RQID,PRID,PSID,RQAMT-AMT),t):-	AMT<RQAMT, holds(request(RQID,PRID,PSID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
-holds(done(RQID,PRID,PSID,RQAMT),t)	:-	holds(request(RQID,PRID,PSID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
+holds(on(PRID,SID,AMT-RQAMT),t)     :-  AMT>RQAMT, holds(on(PRID,SID,AMT),t-1), holds(carries(RID,SID),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
+holds(request(RQID,PRID,PSID,RQAMT-AMT),t):-    AMT<RQAMT, holds(request(RQID,PRID,PSID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
+holds(done(RQID,PRID,PSID,RQAMT),t) :-  holds(request(RQID,PRID,PSID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
 
 % non-action effects (borrowed from original and edited)
 
@@ -125,9 +121,9 @@ holds(at(shelf(SID),node(X,Y)),t) :- holds(at(shelf(SID),node(X,Y)),t-1), not ho
 holds(carries(RID,SID),t) :- holds(carries(RID,SID),t-1), not occurs(robot(RID),putdown,t).
 holds(on(PRID,SID,AMT),t) :- holds(on(PRID,SID,AMT),t-1), not ab(on(PRID,SID,AMT),t).
 holds(request(RQID,PRID,PID,RQAMT),t) :- holds(request(RQID,PRID,PID,RQAMT),t-1), not ab(request(RQID,PRID,PID,RQAMT),t).
-%ab(on(PRID,SID,AMT),t)		:-	holds(on(PRID,SID,AMT),t-1), holds(carries(RID,SID),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
-ab(request(RQID,PRID,PID,RQAMT),t) :-	holds(request(RQID,PRID,PID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
-ab(request(RQID,PRID,PID,RQAMT),t) :-	holds(done(RQID,PRID,PID,RQAMT),t).
+ab(on(PRID,SID,AMT),t)      :-  holds(on(PRID,SID,AMT),t-1), holds(carries(RID,SID),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
+ab(request(RQID,PRID,PID,RQAMT),t) :-   holds(request(RQID,PRID,PID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
+ab(request(RQID,PRID,PID,RQAMT),t) :-   holds(done(RQID,PRID,PID,RQAMT),t).
 
 % relaxation 2 effects
 holds(on(PRID,SID),t) :- holds(on(PRID,SID),t-1).
@@ -139,7 +135,7 @@ holds(on(PRID,SID),t) :- holds(on(PRID,SID),t-1).
 :-  occurs(robot(RID),move(A,B),t), occurs(robot(RID),move(X,Y),t+1), occurs(robot(RID),move(-X,-Y),t+2), occurs(robot(RID),move(-A,-B),t+3).
 
 %       there is no deliver if there is not enough amount
-%:-  occurs(robot(RID),deliver(A,B,C),t), not deliver(t-1,RID,A,B,C).
+:-  occurs(robot(RID),deliver(A,B,C),t), not deliver(t-1,RID,A,B,C).
 
 %       there can only be one action per robot at a time
 :-  occurs(robot(RID),A,t),occurs(robot(RID),B,t),A!=B.
@@ -148,17 +144,17 @@ holds(on(PRID,SID),t) :- holds(on(PRID,SID),t-1).
 :-  occurs(robot(RID),move(A,B),t),occurs(robot(RID),move(C,D),t+1),occurs(robot(RID),move(E,F),t+2),occurs(robot(RID),move(G,H),t+3),holds(at(robot(RID),node(X,Y)),t-1),holds(at(robot(RID),node(X,Y)),t+3).
 
 %       There can only be one robot and one shelf at a node at the same time.
-:-	holds(at(robot(I),node(X,Y)),T), holds(at(robot(J),node(X,Y)),T), I!=J.
-:-	holds(at(shelf(I),node(X,Y)),T), holds(at(shelf(J),node(X,Y)),T), I!=J.
+:- holds(at(robot(I),node(X,Y)),T), holds(at(robot(J),node(X,Y)),T), I!=J.
+:- holds(at(shelf(I),node(X,Y)),T), holds(at(shelf(J),node(X,Y)),T), I!=J.
 
 %       A robot/shelf can only be at one node at a time.
-:-	robot(RID), 2{holds(at(robot(RID),node(X,Y)),t) : node(X,Y)}.
-:-	shelf(SID), 2{holds(at(shelf(SID),node(X,Y)),t) : node(X,Y)}.
+:-  robot(RID), 2{holds(at(robot(RID),node(X,Y)),t) : node(X,Y)}.
+:-  shelf(SID), 2{holds(at(shelf(SID),node(X,Y)),t) : node(X,Y)}.
 
 %       Two robots can't swap places as they would crash.
-:-	holds(at(robot(RID1),node(X1,Y1)),t), holds(at(robot(RID2),node(X2,Y2)),t),
-	holds(at(robot(RID1),node(X2,Y2)),t-1), holds(at(robot(RID2),node(X1,Y1)),t-1),
-	RID1<RID2, |X2-X1|+|Y2-Y1|==1.
+:-  holds(at(robot(RID1),node(X1,Y1)),t), holds(at(robot(RID2),node(X2,Y2)),t),
+    holds(at(robot(RID1),node(X2,Y2)),t-1), holds(at(robot(RID2),node(X1,Y1)),t-1),
+    RID1<RID2, |X2-X1|+|Y2-Y1|==1.
 
 %       On higway nodes shelfs can't be putdown and robots can't do nothing for more than one time step.
 :-  highway(X,Y), not node(X,Y).
@@ -188,5 +184,3 @@ goal(t) :- not holds(request(_,_,_,_),t).
 
 #program base.
 #show occurs/3.
-#show holds/2.
-
