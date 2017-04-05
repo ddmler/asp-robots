@@ -113,15 +113,24 @@ holds(done(RQID,PRID,PSID,RQAMT),t)	:-	holds(request(RQID,PRID,PSID,RQAMT),t-1),
 
 % non-action effects (borrowed from original and edited)
 
-holds(at(robot(RID),node(X,Y)),t) :- holds(at(robot(RID),node(X,Y)),t-1), not moved(robot(RID),t).
-holds(at(shelf(SID),node(X,Y)),t) :- holds(at(shelf(SID),node(X,Y)),t-1), not holds(carries(_,SID),t-1).
-holds(carries(RID,SID),t) :- holds(carries(RID,SID),t-1), not occurs(robot(RID),putdown,t).
-holds(on(PRID,SID,AMT),t) :- holds(on(PRID,SID,AMT),t-1), not ab(on(PRID,SID,AMT),t).
-holds(request(RQID,PRID,PID,RQAMT),t) :- holds(request(RQID,PRID,PID,RQAMT),t-1), not ab(request(RQID,PRID,PID,RQAMT),t).
-ab(on(PRID,SID,AMT),t)		:-	holds(on(PRID,SID,AMT),t-1), holds(carries(RID,SID),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
+%%	INERTIA
+holds(F,t) :- holds(F,t-1), not ab(F,t).
+
+%%	INERTIA - ABNORMALS
+%       Anything that changes is abnormal and won't be handled by inertia.
+ab(at(robot(RID),node(X,Y)),t) 	:-	holds(at(robot(RID),node(X,Y)),t-1),
+								moved(robot(RID),t).								
+ab(at(shelf(SID),node(X,Y)),t) 	:-	holds(at(shelf(SID),node(X,Y)),t-1),
+								holds(carries(RID,SID),t-1),
+								moved(robot(RID),t).
+ab(carries(RID,SID),t)		:-	holds(carries(RID,SID),t-1),
+								occurs(robot(RID),putdown,t).
+ab(on(PRID,SID,AMT),t)		:-	holds(on(PRID,SID,AMT),t-1),
+                                holds(carries(RID,SID),t-1),
+                                occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
 ab(request(RQID,PRID,PID,RQAMT),t) :-	holds(request(RQID,PRID,PID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
 ab(request(RQID,PRID,PID,RQAMT),t) :-	holds(done(RQID,PRID,PID,RQAMT),t).
-
+ab(done(RQID,PRID,PID,RQAMT),t) :- holds(done(RQID,PRID,PID,RQAMT),t-1).
 %%%%%%% constraints (partly borrowed from original) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %       loop prevention
@@ -178,4 +187,5 @@ goal(t) :- not holds(request(_,_,_,_),t).
 
 #program base.
 #show occurs/3.
+
 
