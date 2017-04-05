@@ -91,7 +91,7 @@ cased(t,RID,RQID,Item,RQAMT) :- holds(carries(RID,SID),t), holds(at(robot(RID),n
 
 % define help attribute for constraint: no deliver if there is not enough amount
 
-deliver(t,RID,RQID,PRID,RQAMT) :- cased(t,RID,RQID,PRID,RQAMT).
+%deliver(t,RID,RQID,PRID,RQAMT) :- cased(t,RID,RQID,PRID,RQAMT).
 
 % robot action decisions
 
@@ -110,24 +110,35 @@ holds(at(robot(RID),node(X+DX,Y+DY)),t) :-  node(X+DX,Y+DY), holds(at(robot(RID)
 holds(at(shelf(SID),node(X+DX,Y+DY)),t) :-  node(X+DX,Y+DY), holds(at(robot(RID),node(X,Y)),t-1), occurs(robot(RID),move(DX,DY),t), holds(carries(RID,SID),t-1).
 holds(carries(RID,SID),t)           :-  holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), occurs(robot(RID),pickup,t).
 moved(robot(RID),t)                 :-  occurs(robot(RID),move(_,_),t), robot(RID).
-holds(on(PRID,SID,AMT-RQAMT),t)     :-  AMT>RQAMT, holds(on(PRID,SID,AMT),t-1), holds(carries(RID,SID),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
+%holds(on(PRID,SID,AMT-RQAMT),t)     :-  AMT>RQAMT, holds(on(PRID,SID,AMT),t-1), holds(carries(RID,SID),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
 holds(request(RQID,PRID,PSID,RQAMT-AMT),t):-    AMT<RQAMT, holds(request(RQID,PRID,PSID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
 holds(done(RQID,PRID,PSID,RQAMT),t) :-  holds(request(RQID,PRID,PSID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
 
 % non-action effects (borrowed from original and edited)
 
-holds(at(robot(RID),node(X,Y)),t) :- holds(at(robot(RID),node(X,Y)),t-1), not moved(robot(RID),t).
-holds(at(shelf(SID),node(X,Y)),t) :- holds(at(shelf(SID),node(X,Y)),t-1), not holds(carries(_,SID),t-1).
-holds(carries(RID,SID),t) :- holds(carries(RID,SID),t-1), not occurs(robot(RID),putdown,t).
-holds(on(PRID,SID,AMT),t) :- holds(on(PRID,SID,AMT),t-1), not ab(on(PRID,SID,AMT),t).
-holds(request(RQID,PRID,PID,RQAMT),t) :- holds(request(RQID,PRID,PID,RQAMT),t-1), not ab(request(RQID,PRID,PID,RQAMT),t).
-ab(on(PRID,SID,AMT),t)      :-  holds(on(PRID,SID,AMT),t-1), holds(carries(RID,SID),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
-ab(request(RQID,PRID,PID,RQAMT),t) :-   holds(request(RQID,PRID,PID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
-ab(request(RQID,PRID,PID,RQAMT),t) :-   holds(done(RQID,PRID,PID,RQAMT),t).
+%%	INERTIA
+holds(F,t) :- holds(F,t-1), not ab(F,t).
+
+%%	INERTIA - ABNORMALS
+%       Anything that changes is abnormal and won't be handled by inertia.
+ab(at(robot(RID),node(X,Y)),t) 	:-	holds(at(robot(RID),node(X,Y)),t-1),
+								moved(robot(RID),t).								
+ab(at(shelf(SID),node(X,Y)),t) 	:-	holds(at(shelf(SID),node(X,Y)),t-1),
+								holds(carries(RID,SID),t-1),
+								moved(robot(RID),t).
+ab(carries(RID,SID),t)		:-	holds(carries(RID,SID),t-1),
+								occurs(robot(RID),putdown,t).
+ab(on(PRID,SID,AMT),t)		:-	holds(on(PRID,SID,AMT),t-1),
+                               holds(carries(RID,SID),t-1),
+                               occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
+ab(request(RQID,PRID,PID,RQAMT),t) :-	holds(request(RQID,PRID,PID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
+ab(request(RQID,PRID,PID,RQAMT),t) :-	holds(done(RQID,PRID,PID,RQAMT),t).
+ab(done(RQID,PRID,PID,RQAMT),t)    :-	holds(done(RQID,PRID,PID,RQAMT),t-1).
+
 
 % relaxation 2 effects
 holds(on(PRID,SID),t) :- holds(on(PRID,SID),t-1).
-
+:- occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t), holds(carries(RID,SID),t), not init(on(PRID, SID)).
 %%%%%%% constraints (partly borrowed from original) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %       loop prevention
@@ -135,7 +146,7 @@ holds(on(PRID,SID),t) :- holds(on(PRID,SID),t-1).
 :-  occurs(robot(RID),move(A,B),t), occurs(robot(RID),move(X,Y),t+1), occurs(robot(RID),move(-X,-Y),t+2), occurs(robot(RID),move(-A,-B),t+3).
 
 %       there is no deliver if there is not enough amount
-:-  occurs(robot(RID),deliver(A,B,C),t), not deliver(t-1,RID,A,B,C).
+%:-  occurs(robot(RID),deliver(A,B,C),t), not deliver(t-1,RID,A,B,C).
 
 %       there can only be one action per robot at a time
 :-  occurs(robot(RID),A,t),occurs(robot(RID),B,t),A!=B.
