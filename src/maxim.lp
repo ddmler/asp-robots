@@ -85,7 +85,8 @@ posscased(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
 posscased(RID,move(1,0),t) :- possmoveright(RID,t-1).
 posscased(RID,move(0,1),t) :- possmoveup(RID,t-1).
 posscased(RID,move(0,-1),t) :- possmovedown(RID,t-1).
-posscased(RID,deliver(RQID, PRID, AMT),t) :- robot(RID),init(request(RQID, PRID, StationID, RQAMT)), AMT = 1..RQAMT, maxim(RQID,PRID,_,t-1).
+posscased(RID,deliver(RQID, PRID, RQAMT),t) :- robot(RID),holds(request(RQID,PRID,PSID,RQAMT),t-1), RQAMT<=AMT, maxim(RQID,PRID,_,t-1),holds(carries(RID,SID),t-1),holds(on(PRID, SID, AMT),t-1).
+posscased(RID,deliver(RQID, PRID, AMT),t) :- robot(RID),holds(request(RQID,PRID,PSID,RQAMT),t-1), RQAMT>AMT, maxim(RQID,PRID,_,t-1), holds(carries(RID,SID),t-1),holds(on(PRID, SID, AMT),t-1).
 
 % defining cases for different actions
 
