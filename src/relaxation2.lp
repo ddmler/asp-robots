@@ -54,34 +54,22 @@ occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t) :- occurs(ro
 
 % define all possible acions for a robot at step t for each case
 
-possmoveleft(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X-1,Y).
-possmoveright(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X+1,Y).
-possmoveup(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y+1).
-possmovedown(RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y-1).
+possmove(-1,0,RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X-1,Y).
+possmove(1,0,RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X+1,Y).
+possmove(0,1,RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y+1).
+possmove(0,-1,RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y-1).
 
-posscasea(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
-posscasea(RID,move(1,0),t) :- possmoveright(RID,t-1).
-posscasea(RID,move(0,1),t) :- possmoveup(RID,t-1).
-posscasea(RID,move(0,-1),t) :- possmovedown(RID,t-1).
+posscasea(RID,move(X,Y),t) :- possmove(X,Y,RID,t-1).
 
-posscaseb(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
-posscaseb(RID,move(1,0),t) :- possmoveright(RID,t-1).
-posscaseb(RID,move(0,1),t) :- possmoveup(RID,t-1).
-posscaseb(RID,move(0,-1),t) :- possmovedown(RID,t-1).
+posscaseb(RID,move(X,Y),t) :- possmove(X,Y,RID,t-1).
 posscaseb(RID,pickup,t) :- robot(RID).
 
-posscasec(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
-posscasec(RID,move(1,0),t) :- possmoveright(RID,t-1).
-posscasec(RID,move(0,1),t) :- possmoveup(RID,t-1).
-posscasec(RID,move(0,-1),t) :- possmovedown(RID,t-1).
+posscasec(RID,move(X,Y),t) :- possmove(X,Y,RID,t-1).
 posscasec(RID,putdown,t) :- robot(RID).
 
-posscased(RID,move(-1,0),t) :- possmoveleft(RID,t-1).
-posscased(RID,move(1,0),t) :- possmoveright(RID,t-1).
-posscased(RID,move(0,1),t) :- possmoveup(RID,t-1).
-posscased(RID,move(0,-1),t) :- possmovedown(RID,t-1).
-posscased(RID,deliver(RQID, PRID, RQAMT),t) :- robot(RID),init(request(RQID, PRID, StationID, RQAMT)).
-
+posscased(RID,move(X,Y),t) :- possmove(X,Y,RID,t-1).
+posscased(RID,deliver(RQID, PRID, RQAMT),t) :- robot(RID),holds(request(RQID,PRID,PSID,RQAMT),t-1), RQAMT<=AMT, minid(RQID,PRID,_,t-1),holds(carries(RID,SID),t-1),holds(on(PRID, SID, AMT),t-1).
+posscased(RID,deliver(RQID, PRID, AMT),t) :- robot(RID),holds(request(RQID,PRID,PSID,RQAMT),t-1), RQAMT>AMT, minid(RQID,PRID,_,t-1), holds(carries(RID,SID),t-1),holds(on(PRID, SID, AMT),t-1).
 % defining cases for different actions
 
 casea(t,RID) :- holds(at(robot(RID),node(X,Y)),t), not holds(at(shelf(_),node(X,Y)),t).
@@ -114,9 +102,7 @@ moved(robot(RID),t)                 :-  occurs(robot(RID),move(_,_),t), robot(RI
 holds(request(RQID,PRID,PSID,RQAMT-AMT),t):-    AMT<RQAMT, holds(request(RQID,PRID,PSID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
 holds(done(RQID,PRID,PSID,RQAMT),t) :-  holds(request(RQID,PRID,PSID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
 
-% non-action effects (borrowed from original and edited)
-
-%%	INERTIA
+%%	INERTIA (borrowed from original)
 holds(F,t) :- holds(F,t-1), not ab(F,t).
 
 %%	INERTIA - ABNORMALS
