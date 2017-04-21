@@ -76,10 +76,6 @@ caseb(t,RID) :- holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)
 casec(t,RID) :- holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), holds(carries(RID,SID),t), not init(at(pickingstation(_), node(X,Y))).
 cased(t,RID,RQID,Item,RQAMT) :- holds(carries(RID,SID),t), holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), init(at(pickingstation(ID),node(X, Y))), init(request(RQID, Item, ID, RQAMT)), init(on(Item, SID, Amt)).
 
-% define help attribute for constraint: no deliver if there is not enough amount
-
-%deliver(t,RID,RQID,PRID,RQAMT) :- cased(t,RID,RQID,PRID,RQAMT).
-
 % robot action decisions
 
 {occurs(robot(RID),A,t):posscasea(RID,A,t)}1 :- casea(t-1,RID).
@@ -129,9 +125,6 @@ holds(on(PRID,SID),t) :- holds(on(PRID,SID),t-1).
 %       loop prevention
 :-  occurs(robot(RID),move(A,B),t), occurs(robot(RID),move(X,Y),t+1), occurs(robot(RID),move(-A,-B),t+2), occurs(robot(RID),move(-X,-Y),t+3).
 :-  occurs(robot(RID),move(A,B),t), occurs(robot(RID),move(X,Y),t+1), occurs(robot(RID),move(-X,-Y),t+2), occurs(robot(RID),move(-A,-B),t+3).
-
-%       there is no deliver if there is not enough amount
-%:-  occurs(robot(RID),deliver(A,B,C),t), not deliver(t-1,RID,A,B,C).
 
 %       there can only be one action per robot at a time
 :-  occurs(robot(RID),A,t),occurs(robot(RID),B,t),A!=B.
