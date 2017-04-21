@@ -65,7 +65,7 @@ posscasec(RID,move(X,Y),t) :- possmove(X,Y,RID,t-1).
 posscasec(RID,putdown,t) :- robot(RID).
 
 posscased(RID,move(X,Y),t) :- possmove(X,Y,RID,t-1).
-posscased(RID,deliver(RQID, PRID, RQAMT),t) :- robot(RID), init(request(RQID, PRID, StationID, AMT)), AMT = 1..RQAMT.
+posscased(RID,deliver(RQID, PRID, AMT),t) :- robot(RID), init(request(RQID, PRID, StationID, RQAMT)), AMT = 1..RQAMT.
 
 % defining cases for different actions
 
