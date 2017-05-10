@@ -16,7 +16,10 @@ init(object(node,1),value(at,(1,1))).
 init(object(node,2),value(at,(1,2))).
 init(object(order,1),value(line,(1,1))).
 init(object(order,1),value(pickingStation,1)).
+init(object(order,2),value(pickingStation,1)).
+init(object(order,3),value(pickingStation,1)).
 init(object(pickingStation,1),value(at,(1,2))).
 init(object(product,1),value(on,(1,1))).
 init(object(robot,1),value(at,(1,1))).
+init(object(robot,2),value(at,(2,1))).
 init(object(shelf,1),value(at,(1,1))).

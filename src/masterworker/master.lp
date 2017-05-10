@@ -1,7 +1,15 @@
 #program base.
-robot(1).
-robot(2).
-goal(1,1,2).
-goal(2,2,1).
-rob(1,3,2).
-rob(2,2,3).
+
+
+maxrob(X) :- X=#max{T: init(object(robot,T),value(at,(_,_))) }.
+maxorder(Y) :- Y=#max{A:  init(object(order,A),value(pickingStation,_)) }.
+
+roboto(1..X) :- maxrob(X).
+
+%assign orders
+{roborder(RID, OID) : init(object(order,OID),value(pickingStation,_)), RID = X/OID, maxrob(X)}=A :- X>=A, maxorder(A), maxrob(X).
+{roborder(RID, OID) : init(object(order,OID),value(pickingStation,_)), RID = 1..X, maxrob(X)}=A :- X<A, maxorder(A), maxrob(X).
+
+%all orders need to be assigned
+:- init(object(order,OID),value(pickingStation,_)), not roborder(_,OID).
+
