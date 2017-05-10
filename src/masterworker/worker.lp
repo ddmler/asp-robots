@@ -6,7 +6,7 @@ holds(F,0) :- init(F).
 %%cast external instance format to internal instance format
 node(X,Y) :- init(object(node, ID), value(at, (X, Y))).
 highway(X,Y) :- init(object(highway, ID), value(at, (X, Y))).
-init(at(robot(ID), node(X, Y))) :- init(object(robot, ID), value(at, (X, Y))).
+init(at(robot(ID), node(X, Y))) :- init(object(robot, ID), value(at, (X, Y))), self(ID).
 init(at(shelf(ID), node(X, Y))) :- init(object(shelf, ID), value(at, (X, Y))).
 init(at(pickingstation(ID), node(X, Y))) :- init(object(pickingStation, ID), value(at, (X, Y))).
 init(on(ID, ShelfID, Amount)) :- init(object(product, ID), value(on, (ShelfID, Amount))).
@@ -45,7 +45,38 @@ occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t) :- occurs(ro
 
 
 
-{ occurs(robot(RID),A,t):action(A) } 1 :- self(RID).
+
+% define all possible acions for a robot at step t for each case
+
+possmove(-1,0,RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X-1,Y).
+possmove(1,0,RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X+1,Y).
+possmove(0,1,RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y+1).
+possmove(0,-1,RID,t) :- holds(at(robot(RID),node(X,Y)),t), node(X,Y-1).
+
+posscasea(RID,move(X,Y),t) :- possmove(X,Y,RID,t-1).
+
+posscaseb(RID,move(X,Y),t) :- possmove(X,Y,RID,t-1).
+posscaseb(RID,pickup,t) :- robot(RID).
+
+posscasec(RID,move(X,Y),t) :- possmove(X,Y,RID,t-1).
+posscasec(RID,putdown,t) :- robot(RID).
+
+posscased(RID,move(X,Y),t) :- possmove(X,Y,RID,t-1).
+posscased(RID,deliver(RQID, PRID, AMT),t) :- robot(RID), init(request(RQID, PRID, StationID, RQAMT)), AMT = 1..RQAMT.
+
+% defining cases for different actions
+
+casea(t,RID) :- holds(at(robot(RID),node(X,Y)),t), not holds(at(shelf(_),node(X,Y)),t).
+caseb(t,RID) :- holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), not holds(carries(RID,SID),t).
+casec(t,RID) :- holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), holds(carries(RID,SID),t), not init(at(pickingstation(_), node(X,Y))).
+cased(t,RID,RQID,Item,Amt) :- holds(carries(RID,SID),t), holds(at(robot(RID),node(X,Y)),t), holds(at(shelf(SID),node(X,Y)),t), init(at(pickingstation(ID),node(X, Y))), init(request(RQID, Item, ID, Amount)), init(on(Item, SID, Amt)).
+
+% robot action decisions
+
+{occurs(robot(RID),A,t):posscasea(RID,A,t)}1 :- casea(t-1,RID).
+{occurs(robot(RID),A,t):posscaseb(RID,A,t)}1 :- caseb(t-1,RID).
+{occurs(robot(RID),A,t):posscasec(RID,A,t)}1 :- casec(t-1,RID).
+{occurs(robot(RID),A,t):posscased(RID,A,t)}1 :- cased(t-1,RID,_,_,_).
 
 
 
