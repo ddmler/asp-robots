@@ -119,19 +119,27 @@ ab(done(RQID,PRID,PID,RQAMT),t) :- holds(done(RQID,PRID,PID,RQAMT),t-1).
 
 
 orderdelivered(RQID,t) :- not holds(request(RQID,_,_,_),t), roborder(RID,RQID), self(RID).
-%orderdelivered(t) :- not roborder(RID,_), self(RID).
 
-%orderdelivered(t+1) :- orderdelivered(t).
+putback(RQID, t) :- orderdelivered(RQID, t-1), holds(at(shelf(SID),node(X,Y)),t), init(object(shelf,SID),value(at,(X,Y))), occurs(object(robot, _), action(putdown, ()), t).
 
-putback(t,RQID) :- orderdelivered(t-1,RQID), holds(at(shelf(SID),node(X,Y)),t), init(object(shelf,SID),value(at,(X,Y))), not holds(carries(_,SID),t).
+requestleft(t) :- holds(request(RQID, _, _, _),t), roborder(RID, RQID), self(RID).
+allorderdone(t) :- not requestleft(t).
+allputback(t) :- putback(_, t), allorderdone(t-1).
 
-allorderdone(t) :- orderdelivered(RQID,t).
-allputback(t) :- putback(_, RQID).
+allorderdone(t) :- allorderdone(t-1).
+allputback(t) :- allputback(t-1).
+orderdelivered(RQID, t) :- orderdelivered(RQID, t-1).
 
-goal(t) :- putback(_, RQID), orderdelivered(RQID,t).
+%:- orderdelivered(RQID, _), not putback(RQID, _).
+:- roborder(RID, RQID), self(RID), not orderdelivered(RQID, t), query(t).
+
+occurs(object(robot, RID), action(move, (0,1)), t) :- allputback(t-1), self(RID).
+
+goal(1) :- not roborder(RID, _), self(RID).
+
+goal(t) :- allputback(t).
 :- not goal(t), query(t).
-%:- roborder(RID,RQID), self(RID), 1{not orderdelivered(RQID,t); not putback(_,RQID)}, query(t).
-%:- roborder(RID,RQID), self(RID), not putback(t,RQID).
+
 
 #show occurs/3.
 #show holds/2.
@@ -140,3 +148,4 @@ goal(t) :- putback(_, RQID), orderdelivered(RQID,t).
 #show highway/2.
 #show moved/2.
 #show init/1.
+#show putback/2.
