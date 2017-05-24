@@ -116,14 +116,27 @@ ab(done(RQID,PRID,PID,RQAMT),t) :- holds(done(RQID,PRID,PID,RQAMT),t-1).
 #external query(t).
 %%%%%%% fulfillment of orders (borrowed from original) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-orderdelivered(t) :- not holds(request(_,_,_,_),t).
+
+
+orderdelivered(RQID,t) :- not holds(request(RQID,_,_,_),t), roborder(RID,RQID), self(RID).
+%orderdelivered(t) :- not roborder(RID,_), self(RID).
 
 %orderdelivered(t+1) :- orderdelivered(t).
 
-putback(t) :- orderdelivered(t-1), holds(at(shelf(SID),node(X,Y)),t), init(object(shelf,SID),value(at,(X,Y))), not holds(carries(_,SID),t).
+putback(t,RQID) :- orderdelivered(t-1,RQID), holds(at(shelf(SID),node(X,Y)),t), init(object(shelf,SID),value(at,(X,Y))), not holds(carries(_,SID),t).
 
-goal(t) :- putback(t).
+allorderdone(t) :- orderdelivered(RQID,t).
+allputback(t) :- putback(_, RQID).
+
+goal(t) :- putback(_, RQID), orderdelivered(RQID,t).
 :- not goal(t), query(t).
-
+%:- roborder(RID,RQID), self(RID), 1{not orderdelivered(RQID,t); not putback(_,RQID)}, query(t).
+%:- roborder(RID,RQID), self(RID), not putback(t,RQID).
 
 #show occurs/3.
+#show holds/2.
+#show node/2.
+#show orderdelivered/2  .
+#show highway/2.
+#show moved/2.
+#show init/1.
