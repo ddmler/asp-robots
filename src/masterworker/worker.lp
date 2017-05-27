@@ -78,6 +78,9 @@ cased(t,RID,RQID,Item,Amt) :- holds(carries(RID,SID),t), holds(at(robot(RID),nod
 {occurs(robot(RID),A,t):posscasec(RID,A,t)}1 :- casec(t-1,RID).
 {occurs(robot(RID),A,t):posscased(RID,A,t)}1 :- cased(t-1,RID,_,_,_).
 
+% handle bugs from checker
+
+:- bug(3, RID, t), occurs(robot(RID), _, t), self(RID).
 
 
 

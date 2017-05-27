@@ -7,7 +7,7 @@ bug(2,RID,T):-  occurs(robot(RID),move(A,B),T),occurs(robot(RID),move(C,D),T+1),
 
 %       There can only be one robot and one shelf at a node at the same time.
 bug(3,RID1,T):-	node(X,Y), holds(at(robot(RID1),node(X,Y)),T), holds(at(robot(RID2),node(X,Y)),T), RID1<RID2.
-bug(4,SID1,T):-	node(X,Y), holds(at(shelf(SID1),node(X,Y)),T), holds(at(shelf(SID2),node(X,Y)),T), SID1<SID2.
+%bug(4,SID1,T):-	node(X,Y), holds(at(shelf(SID1),node(X,Y)),T), holds(at(shelf(SID2),node(X,Y)),T), SID1<SID2.
 
 
 %       Two robots can'T swap places as they would crash.
@@ -25,4 +25,4 @@ bug(9,RID,T):- occurs(robot(RID),move(DX,DY),T), occurs(robot(RID),move(-DX,-DY)
 bug(10,RID,T):- occurs(robot(RID),pickup,T), occurs(robot(RID),putdown,T-1).
 bug(11,RID,T):- occurs(robot(RID),putdown,T), occurs(robot(RID),pickup,T-1).
 
-#show bug/1.
+#show bug/3.
