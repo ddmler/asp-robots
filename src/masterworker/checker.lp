@@ -2,14 +2,12 @@
 %bug(1,RID,T):-  occurs(robot(RID),move(A,B),T), occurs(robot(RID),move(X,Y),T+1), occurs(robot(RID),move(-A,-B),T+2), occurs(robot(RID),move(-X,-Y),T+3).
 %bug(1,RID,T):-  occurs(robot(RID),move(A,B),T), occurs(robot(RID),move(X,Y),T+1), occurs(robot(RID),move(-X,-Y),T+2), occurs(robot(RID),move(-A,-B),T+3).
 
-%       no movement in circle
-%bug(2,RID,T):-  occurs(robot(RID),move(A,B),T),occurs(robot(RID),move(C,D),T+1),occurs(robot(RID),move(E,F),T+2),occurs(robot(RID),move(G,H),T+3),holds(at(robot(RID),node(X,Y)),T-1),holds(at(robot(RID),node(X,Y)),T+3).
 
 %       There can only be one robot and one shelf at a node at the same time.
 bug(3,RID1,T):-	node(X,Y), holds(at(robot(RID1),node(X,Y)),T), holds(at(robot(RID2),node(X,Y)),T), RID1<RID2.
+
 % robot id fehlt hier
 %bug(4,SID1,T):-	node(X,Y), holds(at(shelf(SID1),node(X,Y)),T), holds(at(shelf(SID2),node(X,Y)),T), SID1<SID2.
-
 
 %       Two robots can'T swap places as they would crash.
 bug(5,RID1,X1-X2,Y1-Y2,T):-	holds(at(robot(RID1),node(X1,Y1)),T), holds(at(robot(RID2),node(X2,Y2)),T),
