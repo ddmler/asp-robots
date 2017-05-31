@@ -7,7 +7,7 @@ def main(prg):
     def on_model(m):
         checkerplan = ". ".join(map(str, m.symbols(shown=True))) + "."
         if checkerplan != ".":
-        	os.system("echo \"" + checkerplan + "\" > checkerplan.lp")
+        	os.system("echo \"" + checkerplan + "\" > checkerplan.lp && echo \"" + checkerplan + "\" >> masterplan.lp")
         else:
         	os.system("echo \"\" > checkerplan.lp")
 

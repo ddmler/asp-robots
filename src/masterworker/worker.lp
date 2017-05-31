@@ -81,6 +81,10 @@ cased(t,RID,RQID,Item,Amt) :- holds(carries(RID,SID),t), holds(at(robot(RID),nod
 % handle bugs from checker
 
 :- bug(3, RID, t), occurs(robot(RID), _, t), self(RID).
+:- bug(5,RID,X,Y,t), occurs(robot(RID),move(X,Y),t), self(RID).
+:- bug(7,RID,t), occurs(robot(RID),putdown,t), self(RID).
+:- bug(8,RID,t), holds(at(robot(RID),node(X,Y)),t), not moved(robot(RID),t-1), not moved(robot(RID),t), not init(at(robot(RID),node(X,Y))).
+
 
 
 
