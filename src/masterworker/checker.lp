@@ -4,7 +4,7 @@
 
 
 %       There can only be one robot and one shelf at a node at the same time.
-bug(3,RID1,T):-	node(X,Y), holds(at(robot(RID1),node(X,Y)),T), holds(at(robot(RID2),node(X,Y)),T), RID1<RID2.
+bug(3,RID1,A,T):-	node(X,Y), holds(at(robot(RID1),node(X,Y)),T), holds(at(robot(RID2),node(X,Y)),T), RID1<RID2, occurs(robot(RID1),A,T).
 
 % robot id fehlt hier
 %bug(4,SID1,T):-	node(X,Y), holds(at(shelf(SID1),node(X,Y)),T), holds(at(shelf(SID2),node(X,Y)),T), SID1<SID2.
@@ -14,8 +14,7 @@ bug(5,RID1,X1-X2,Y1-Y2,T):-	holds(at(robot(RID1),node(X1,Y1)),T), holds(at(robot
 	holds(at(robot(RID1),node(X2,Y2)),T-1), holds(at(robot(RID2),node(X1,Y1)),T-1),
 	RID1<RID2, |X2-X1|+|Y2-Y1|==1.
 
-%       On higway nodes shelfs can'T be putdown and robots can'T do nothing for more than one time step.
-bug(7,RID,T):-  highway(X,Y), holds(at(robot(RID),node(X,Y)),T), occurs(robot(RID),putdown,T).
+%       On higway nodes robots can'T do nothing for more than one time step.
 bug(8,RID,T):-  highway(X,Y), holds(at(robot(RID),node(X,Y)),T), not moved(robot(RID),T-1), not moved(robot(RID),T), not init(at(robot(RID),node(X,Y))).
 
 %       Small scope loop preventions preventing opposite actions at adjacent time points.
@@ -24,4 +23,5 @@ bug(8,RID,T):-  highway(X,Y), holds(at(robot(RID),node(X,Y)),T), not moved(robot
 %bug(11,RID,T):- occurs(robot(RID),putdown,T), occurs(robot(RID),pickup,T-1).
 
 #show bug/3.
+#show bug/4.
 #show bug/5.

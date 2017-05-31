@@ -80,9 +80,8 @@ cased(t,RID,RQID,Item,Amt) :- holds(carries(RID,SID),t), holds(at(robot(RID),nod
 
 % handle bugs from checker
 
-:- bug(3, RID, t), occurs(robot(RID), _, t), self(RID).
+:- bug(3, RID, A, t), occurs(robot(RID), A, t), self(RID).
 :- bug(5,RID,X,Y,t), occurs(robot(RID),move(X,Y),t), self(RID).
-:- bug(7,RID,t), occurs(robot(RID),putdown,t), self(RID).
 :- bug(8,RID,t), holds(at(robot(RID),node(X,Y)),t), not moved(robot(RID),t-1), not moved(robot(RID),t), not init(at(robot(RID),node(X,Y))).
 
 
@@ -117,6 +116,10 @@ ab(request(RQID,PRID,PID,RQAMT),t) :-   holds(request(RQID,PRID,PID,RQAMT),t-1),
 ab(request(RQID,PRID,PID,RQAMT),t) :-   holds(done(RQID,PRID,PID,RQAMT),t).
 ab(done(RQID,PRID,PID,RQAMT),t) :- holds(done(RQID,PRID,PID,RQAMT),t-1).
 
+
+% Constraints
+% no putdown on highway
+:-  highway(X,Y), holds(at(robot(RID),node(X,Y)),T), occurs(robot(RID),putdown,T).
 
 
 #program check(t).
