@@ -1,1 +1,0 @@
-occurs(object(robot,1),action(deliver,(1,1,2)),2) occurs(object(robot,1),action(pickup,()),0) occurs(object(robot,1),action(move,(0,1)),1)
