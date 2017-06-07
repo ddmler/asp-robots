@@ -2,6 +2,8 @@
 
 #### Run
 
+First edit master-python.lp and change the full path to the clingo executable.
+
 ```sh
 clingo master-python.lp master.lp instance.lp
 ```

@@ -1,5 +1,7 @@
 #script (python)
 
+# from clingo examples: iclingo
+
 import clingo
 import os
 

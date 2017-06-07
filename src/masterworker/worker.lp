@@ -1,7 +1,7 @@
-%%  INITIAL STATE
+% INITIAL STATE
 holds(F,0) :- init(F).
 
-%%cast external instance format to internal instance format
+% cast external instance format to internal instance format
 node(X,Y) :- init(object(node, ID), value(at, (X, Y))).
 highway(X,Y) :- init(object(highway, ID), value(at, (X, Y))).
 init(at(robot(ID), node(X, Y))) :- init(object(robot, ID), value(at, (X, Y))), self(ID).
@@ -13,7 +13,7 @@ init(carries(RID,SID)) :- init(object(robot, RID), value(carries, SID)).
 robot(Robot) :- self(Robot).
 shelf(Shelf) :- init(at(shelf(Shelf), node(_,_))).
 
-%%	ACTIONS
+% ACTIONS
 action(move(0,1)).
 action(move(1,0)).
 action(move(0,-1)).
@@ -25,7 +25,7 @@ action(deliver(RQID, PRID, AMT)) :- init(request(RQID, PRID, StationID, RQAMT)),
 #program step(t).
 
 
-%%cast internal plan format to output plan format (borrowed from original)
+% cast internal plan format to output plan format (borrowed from original)
 occurs(object(robot, RID), action(move, (DX,DY)), t) :- occurs(robot(RID),move(DX,DY),t).
 occurs(object(robot, RID), action(pickup, ()), t) :- occurs(robot(RID),pickup,t).
 occurs(object(robot, RID), action(putdown, ()), t) :- occurs(robot(RID),putdown,t).
@@ -87,11 +87,11 @@ holds(on(PRID,SID,AMT-RQAMT),t)     :-  AMT>RQAMT, holds(on(PRID,SID,AMT),t-1), 
 holds(request(RQID,PRID,PSID,RQAMT-AMT),t):-    AMT<RQAMT, holds(request(RQID,PRID,PSID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, AMT)), t).
 holds(done(RQID,PRID,PSID,RQAMT),t) :-  holds(request(RQID,PRID,PSID,RQAMT),t-1), occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t).
 
-%%  INERTIA (borrowed from original)
+% INERTIA (borrowed from original)
 holds(F,t) :- holds(F,t-1), not ab(F,t).
 
-%%  INERTIA - ABNORMALS
-%       Anything that changes is abnormal and won't be handled by inertia.
+% INERTIA - ABNORMALS
+% Anything that changes is abnormal and won't be handled by inertia.
 ab(at(robot(RID),node(X,Y)),t)  :-  holds(at(robot(RID),node(X,Y)),t-1),
                                 moved(robot(RID),t).
 ab(at(shelf(SID),node(X,Y)),t)  :-  holds(at(shelf(SID),node(X,Y)),t-1),
@@ -145,7 +145,7 @@ goal(1) :- not roborder(RID, _), self(RID).
 goal(t) :- allputback(t).
 :- not goal(t), query(t).
 
-% print for python scripts
+% output
 #show occurs/3.
 #show holds/2.
 #show node/2.
