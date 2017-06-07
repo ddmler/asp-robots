@@ -55,8 +55,8 @@ minpro(1,RQID,PRID,AMT,t):-AMT=#sum{A,X:holds(on(PRID,X,A),t)}, holds(on(PRID,_,
 %get the minimium requested amount of each requested product at time t
 minpro(2,RQID,PRID,AMT,t) :- AMT=#min{A,X:holds(request(_,X,_,A),t)},holds(request(RQID,PRID,_,AMT),t).
 % get the maximum of the overall sum of all products on all shelfes or the minimium requested amount of each requested product at time t
-maxall(RQID,PRID,AMT,t) :- AMT=#max{A: minpro(_,_,_,A,t)}, minpro(_,RQID,PRID,AMT,t). 
-% if there are at least two order, which request the same product, take the order line with the minimum ID
+maxall(RQID,PRID,AMT,t) :- AMT=#max{A: minpro(_,_,_,A,t)}, minpro(_,RQID,PRID,AMT,t).
+% if there are at least two order, which request the same product, choose the order line with the minimum ID
 minid(RQID,PRID,AMT,t) :- RQID=#min{R:maxall(R,_,_,t)}, maxall(RQID,PRID,AMT,t).
 
 % define all possible acions for a robot at step t for each case
@@ -112,7 +112,7 @@ holds(F,t) :- holds(F,t-1), not ab(F,t).
 %%	INERTIA - ABNORMALS
 %       Anything that changes is abnormal and won't be handled by inertia.
 ab(at(robot(RID),node(X,Y)),t) 	:-	holds(at(robot(RID),node(X,Y)),t-1),
-								moved(robot(RID),t).								
+								moved(robot(RID),t).
 ab(at(shelf(SID),node(X,Y)),t) 	:-	holds(at(shelf(SID),node(X,Y)),t-1),
 								holds(carries(RID,SID),t-1),
 								moved(robot(RID),t).

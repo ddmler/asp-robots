@@ -103,7 +103,7 @@ holds(F,t) :- holds(F,t-1), not ab(F,t).
 %%	INERTIA - ABNORMALS
 %       Anything that changes is abnormal and won't be handled by inertia.
 ab(at(robot(RID),node(X,Y)),t) 	:-	holds(at(robot(RID),node(X,Y)),t-1),
-								moved(robot(RID),t).								
+								moved(robot(RID),t).
 ab(at(shelf(SID),node(X,Y)),t) 	:-	holds(at(shelf(SID),node(X,Y)),t-1),
 								holds(carries(RID,SID),t-1),
 								moved(robot(RID),t).
@@ -120,6 +120,7 @@ ab(done(RQID,PRID,PID,RQAMT),t)    :-	holds(done(RQID,PRID,PID,RQAMT),t-1).
 % relaxation 2 effects
 holds(on(PRID,SID),t) :- holds(on(PRID,SID),t-1).
 :- occurs(object(robot, RID), action(deliver, (RQID, PRID, RQAMT)), t), holds(carries(RID,SID),t), not init(on(PRID, SID)).
+
 %%%%%%% constraints (partly borrowed from original) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %       loop prevention
